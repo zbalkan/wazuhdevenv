@@ -9,7 +9,7 @@ description = "Provision and operate a local Wazuh rule and decoder development 
 readme = "README.md"
 license = "GPL-2.0-only"
 license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 authors = [
   { name = "Zafer Balkan", email = "zafer@zaferbalkan.com" },
 ]
@@ -20,10 +20,12 @@ classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Security",
   "Topic :: Software Development :: Testing",
   "Topic :: Utilities",

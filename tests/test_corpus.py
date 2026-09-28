@@ -7,7 +7,6 @@ import stat
 import warnings
 import zipfile
 from pathlib import Path
-from typing import Self
 
 import pytest
 
@@ -101,7 +100,7 @@ class FakeResponse:
     def __init__(self, content: bytes) -> None:
         self.content = content
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> FakeResponse:
         return self
 
     def __exit__(self, *args: object) -> None:
