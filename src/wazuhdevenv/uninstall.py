@@ -37,9 +37,7 @@ from .state import load_state, managed_lock_path
 LOG = logging.getLogger(__name__)
 
 OSSEC_BACKUP = OSSEC_CONF.with_name("ossec.conf.wazuhdevenv.bak")
-WINDOWS_RULES_BACKUP = WINDOWS_RULES.with_name(
-    WINDOWS_RULES.name + ".wazuhdevenv.bak"
-)
+WINDOWS_RULES_BACKUP = WINDOWS_RULES.with_name(WINDOWS_RULES.name + ".wazuhdevenv.bak")
 APT_REPOSITORY_PATH = Path("/etc/apt/sources.list.d/wazuh.list")
 RPM_REPOSITORY_PATH = Path("/etc/yum.repos.d/wazuh.repo")
 APT_KEYRING_PATH = Path("/usr/share/keyrings/wazuh.gpg")
@@ -209,8 +207,7 @@ def _fstab_cleanup_plan(
 
     expected = {
         WAZUH_HOME / "etc" / name: (
-            f"{(workspace / name).resolve()} "
-            f"{WAZUH_HOME / 'etc' / name} none bind 0 0"
+            f"{(workspace / name).resolve()} {WAZUH_HOME / 'etc' / name} none bind 0 0"
         )
         for name in ("rules", "decoders")
         if WAZUH_HOME / "etc" / name not in preexisting
@@ -266,8 +263,7 @@ def _remove_fstab_entries(
         )
         if remaining:
             raise ConfigurationError(
-                "failed to remove managed /etc/fstab entries: "
-                + ", ".join(remaining)
+                "failed to remove managed /etc/fstab entries: " + ", ".join(remaining)
             )
         if _service_manager() == "systemd":
             runner.run(
@@ -320,9 +316,7 @@ def _detach_workspace(
     _preflight_fstab_entries(runner, workspace, preexisting_fstab)
     stop_wazuh(runner)
     removed = _remove_mounts(runner, workspace, preexisting_mounts)
-    removed.extend(
-        _remove_fstab_entries(runner, workspace, preexisting_fstab)
-    )
+    removed.extend(_remove_fstab_entries(runner, workspace, preexisting_fstab))
     return removed
 
 
@@ -429,6 +423,7 @@ def _prepare_package_directories(runner: CommandRunner) -> None:
         runner.run(["chown", "root:wazuh", str(target)], privileged=True)
         runner.run(["chmod", "0770", str(target)], privileged=True)
 
+
 def _preflight_restore(
     runner: CommandRunner,
     target: Path,
@@ -505,7 +500,9 @@ def _cleanup_workspace_access(
                 ],
                 privileged=True,
             )
-    changed.append("workspace files using the wazuh group were returned to the invoking user's primary group")
+    changed.append(
+        "workspace files using the wazuh group were returned to the invoking user's primary group"
+    )
     return changed
 
 
@@ -553,9 +550,7 @@ def _restore_repository(
     before: object,
 ) -> tuple[str | None, str | None, bool]:
     path = (
-        APT_REPOSITORY_PATH
-        if package_manager.family == "apt"
-        else RPM_REPOSITORY_PATH
+        APT_REPOSITORY_PATH if package_manager.family == "apt" else RPM_REPOSITORY_PATH
     )
     current = _read_optional_privileged(runner, path)
     managed = (
@@ -782,9 +777,7 @@ def uninstall_environment(home: Path, user: InvokingUser) -> UninstallResult:
             removing_wazuh=installed_by_tool,
         )
     )
-    workspace_access_removed = _cleanup_workspace_access(
-        runner, workspace, user
-    )
+    workspace_access_removed = _cleanup_workspace_access(runner, workspace, user)
     removed.extend(workspace_access_removed)
     if any(
         item.startswith("default Wazuh ACL entries:")
@@ -807,12 +800,10 @@ def uninstall_environment(home: Path, user: InvokingUser) -> UninstallResult:
             removed.append("Wazuh Manager package")
         removed.append(str(WAZUH_HOME))
 
-        repository_restored, repository_remnant, repository_safe = (
-            _restore_repository(
-                runner,
-                package_manager,
-                repository_before,
-            )
+        repository_restored, repository_remnant, repository_safe = _restore_repository(
+            runner,
+            package_manager,
+            repository_before,
         )
         if repository_restored:
             restored.append(repository_restored)
@@ -864,9 +855,7 @@ def uninstall_environment(home: Path, user: InvokingUser) -> UninstallResult:
         )
         preserved.append("pre-existing Wazuh Manager package")
 
-        if not ossec_backup_preexisting and _privileged_exists(
-            runner, OSSEC_BACKUP
-        ):
+        if not ossec_backup_preexisting and _privileged_exists(runner, OSSEC_BACKUP):
             runner.run(["rm", "-f", str(OSSEC_BACKUP)], privileged=True)
             removed.append(f"initialization backup: {OSSEC_BACKUP}")
         elif ossec_backup_preexisting:

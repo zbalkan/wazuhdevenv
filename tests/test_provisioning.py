@@ -113,7 +113,9 @@ def test_replace_simple_tag_rejects_unknown_state() -> None:
         )
 
 
-def test_rule_test_values_are_overwritten_without_reimplementing_wazuh_validation() -> None:
+def test_rule_test_values_are_overwritten_without_reimplementing_wazuh_validation() -> (
+    None
+):
     text = """
 <rule_test>
   <threads>unexpected</threads>
@@ -177,8 +179,10 @@ def test_windows_rule_testing_transforms_only_known_default() -> None:
 
 
 def test_windows_rule_testing_rejects_unknown_rule_state() -> None:
-    with pytest.raises(ConfigurationError, match="rule 60000 is in an unexpected state"):
-        provisioning._render_windows_rule_testing("<rule id=\"60000\">different</rule>")
+    with pytest.raises(
+        ConfigurationError, match="rule 60000 is in an unexpected state"
+    ):
+        provisioning._render_windows_rule_testing('<rule id="60000">different</rule>')
 
 
 @pytest.mark.parametrize(
@@ -371,7 +375,9 @@ def test_failed_apt_repository_setup_attempts_cleanup() -> None:
     manager._setup_apt_repository = fail_setup  # type: ignore[method-assign]
     manager._disable_apt_repository = lambda: events.append("cleanup")  # type: ignore[method-assign]
     manager._apt_install = (  # type: ignore[method-assign]
-        lambda packages: (_ for _ in ()).throw(AssertionError(f"install must not run: {packages}"))
+        lambda packages: (_ for _ in ()).throw(
+            AssertionError(f"install must not run: {packages}")
+        )
     )
 
     with pytest.raises(RuntimeError, match="setup failed"):
@@ -724,7 +730,9 @@ def test_missing_fstab_is_created_with_first_bind_entry(
             return SimpleNamespace(returncode=1)
 
         def capture(self, args: list[str], *, privileged: bool = False) -> str:
-            raise AssertionError(f"missing fstab must not be read: {args}, {privileged}")
+            raise AssertionError(
+                f"missing fstab must not be read: {args}, {privileged}"
+            )
 
     written: list[tuple[Path, str]] = []
     monkeypatch.setattr(
@@ -843,7 +851,9 @@ def test_group_membership_failure_is_fatal() -> None:
 
     user = InvokingUser("tester", 1000, 1000, Path("/home/tester"))
 
-    with pytest.raises(ConfigurationError, match="failed to add tester to the wazuh group"):
+    with pytest.raises(
+        ConfigurationError, match="failed to add tester to the wazuh group"
+    ):
         provisioning.ensure_group_membership(GroupRunner(), user)  # type: ignore
 
 
@@ -864,7 +874,11 @@ def test_default_acls_are_applied_when_setfacl_is_available(
             self.commands.append((args, check))
             return SimpleNamespace(returncode=0)
 
-    monkeypatch.setattr(provisioning.shutil, "which", lambda command: "/usr/bin/setfacl" if command == "setfacl" else None)
+    monkeypatch.setattr(
+        provisioning.shutil,
+        "which",
+        lambda command: "/usr/bin/setfacl" if command == "setfacl" else None,
+    )
     runner = AclRunner()
     workspace = tmp_path / "workspace"
 
@@ -904,7 +918,9 @@ def test_default_acl_failure_does_not_fail_provisioning_helper(
             del args, check
             return SimpleNamespace(returncode=1)
 
-    monkeypatch.setattr(provisioning.shutil, "which", lambda command: "/usr/bin/setfacl")
+    monkeypatch.setattr(
+        provisioning.shutil, "which", lambda command: "/usr/bin/setfacl"
+    )
 
     provisioning.configure_default_acls(AclRunner(), tmp_path / "workspace")  # type: ignore
 
@@ -1004,31 +1020,72 @@ def test_initialize_checks_service_manager_before_install(
     monkeypatch.setattr(provisioning, "ensure_linux", lambda: events.append("linux"))
     monkeypatch.setattr(provisioning, "CommandRunner", lambda user: object())
     monkeypatch.setattr(provisioning, "PackageManager", FakePackageManager)
-    monkeypatch.setattr(provisioning, "_service_manager", lambda: events.append("service") or "systemd")  # type: ignore
-    monkeypatch.setattr(provisioning, "prepare_workspace", lambda *args: events.append("workspace"))
-    monkeypatch.setattr(provisioning, "ensure_workspace_venv", lambda *args: events.append("venv"))
-    monkeypatch.setattr(provisioning, "preflight_bind_mounts", lambda *args: events.append("preflight"))
+    monkeypatch.setattr(
+        provisioning, "_service_manager", lambda: events.append("service") or "systemd"
+    )  # type: ignore
+    monkeypatch.setattr(
+        provisioning, "prepare_workspace", lambda *args: events.append("workspace")
+    )
+    monkeypatch.setattr(
+        provisioning, "ensure_workspace_venv", lambda *args: events.append("venv")
+    )
+    monkeypatch.setattr(
+        provisioning, "preflight_bind_mounts", lambda *args: events.append("preflight")
+    )
     monkeypatch.setattr(provisioning, "is_wazuh_active", lambda runner: False)
     monkeypatch.setattr(provisioning, "is_wazuh_enabled", lambda runner: False)
     monkeypatch.setattr(provisioning, "_capture_snapshot", lambda *args: _snapshot())
     monkeypatch.setattr(provisioning, "_render_ossec_config", lambda value: value)
-    monkeypatch.setattr(provisioning, "_render_windows_rule_testing", lambda value: value)
-    monkeypatch.setattr(provisioning, "ensure_group_membership", lambda *args: events.append("group"))
-    monkeypatch.setattr(provisioning, "stop_wazuh", lambda *args: events.append("stop") or False)  # type: ignore
-    monkeypatch.setattr(provisioning, "configure_ossec", lambda *args: events.append("ossec"))
-    monkeypatch.setattr(provisioning, "configure_windows_rule_testing", lambda *args: events.append("windows"))
-    monkeypatch.setattr(provisioning, "configure_bind_mounts", lambda *args: events.append("mounts"))
-    monkeypatch.setattr(provisioning, "configure_permissions", lambda *args: events.append("permissions"))
-    monkeypatch.setattr(provisioning, "configure_default_acls", lambda *args: events.append("acls"))
-    monkeypatch.setattr(provisioning, "validate_wazuh", lambda *args: events.append("validate"))
-    monkeypatch.setattr(provisioning, "start_wazuh", lambda *args: events.append("start"))
-    monkeypatch.setattr(provisioning, "wait_for_logtest", lambda *args: events.append("ready"))
+    monkeypatch.setattr(
+        provisioning, "_render_windows_rule_testing", lambda value: value
+    )
+    monkeypatch.setattr(
+        provisioning, "ensure_group_membership", lambda *args: events.append("group")
+    )
+    monkeypatch.setattr(
+        provisioning, "stop_wazuh", lambda *args: events.append("stop") or False
+    )  # type: ignore
+    monkeypatch.setattr(
+        provisioning, "configure_ossec", lambda *args: events.append("ossec")
+    )
+    monkeypatch.setattr(
+        provisioning,
+        "configure_windows_rule_testing",
+        lambda *args: events.append("windows"),
+    )
+    monkeypatch.setattr(
+        provisioning, "configure_bind_mounts", lambda *args: events.append("mounts")
+    )
+    monkeypatch.setattr(
+        provisioning,
+        "configure_permissions",
+        lambda *args: events.append("permissions"),
+    )
+    monkeypatch.setattr(
+        provisioning, "configure_default_acls", lambda *args: events.append("acls")
+    )
+    monkeypatch.setattr(
+        provisioning, "validate_wazuh", lambda *args: events.append("validate")
+    )
+    monkeypatch.setattr(
+        provisioning, "start_wazuh", lambda *args: events.append("start")
+    )
+    monkeypatch.setattr(
+        provisioning, "wait_for_logtest", lambda *args: events.append("ready")
+    )
     monkeypatch.setattr(provisioning, "load_state", lambda *args: {"schema_version": 1})
-    monkeypatch.setattr(provisioning, "save_state", lambda *args: events.append("state"))
+    monkeypatch.setattr(
+        provisioning, "save_state", lambda *args: events.append("state")
+    )
 
-    assert provisioning.initialize(tmp_path / "workspace", tmp_path / "home", user) == "4.14.8"
+    assert (
+        provisioning.initialize(tmp_path / "workspace", tmp_path / "home", user)
+        == "4.14.8"
+    )
 
-    assert events.index("dependencies") < events.index("service") < events.index("install")
+    assert (
+        events.index("dependencies") < events.index("service") < events.index("install")
+    )
     assert events.index("validate") < events.index("start") < events.index("ready")
     assert events[-1] == "state"
 
@@ -1060,9 +1117,15 @@ def test_group_membership_failure_does_not_enter_host_rollback(
     monkeypatch.setattr(provisioning, "preflight_bind_mounts", lambda *args: None)
     monkeypatch.setattr(provisioning, "is_wazuh_active", lambda runner: True)
     monkeypatch.setattr(provisioning, "is_wazuh_enabled", lambda runner: True)
-    monkeypatch.setattr(provisioning, "_capture_snapshot", lambda *args: _snapshot(active=True, enabled=True))
+    monkeypatch.setattr(
+        provisioning,
+        "_capture_snapshot",
+        lambda *args: _snapshot(active=True, enabled=True),
+    )
     monkeypatch.setattr(provisioning, "_render_ossec_config", lambda value: value)
-    monkeypatch.setattr(provisioning, "_render_windows_rule_testing", lambda value: value)
+    monkeypatch.setattr(
+        provisioning, "_render_windows_rule_testing", lambda value: value
+    )
     monkeypatch.setattr(
         provisioning,
         "ensure_group_membership",
@@ -1111,11 +1174,15 @@ def test_failed_host_configuration_uses_small_rollback_boundary(
     monkeypatch.setattr(provisioning, "is_wazuh_enabled", lambda runner: False)
     monkeypatch.setattr(provisioning, "_capture_snapshot", lambda *args: _snapshot())
     monkeypatch.setattr(provisioning, "_render_ossec_config", lambda value: value)
-    monkeypatch.setattr(provisioning, "_render_windows_rule_testing", lambda value: value)
+    monkeypatch.setattr(
+        provisioning, "_render_windows_rule_testing", lambda value: value
+    )
     monkeypatch.setattr(provisioning, "ensure_group_membership", lambda *args: None)
     monkeypatch.setattr(provisioning, "stop_wazuh", lambda *args: False)
     monkeypatch.setattr(provisioning, "configure_ossec", lambda *args: None)
-    monkeypatch.setattr(provisioning, "configure_windows_rule_testing", lambda *args: None)
+    monkeypatch.setattr(
+        provisioning, "configure_windows_rule_testing", lambda *args: None
+    )
     monkeypatch.setattr(provisioning, "configure_bind_mounts", lambda *args: None)
     monkeypatch.setattr(provisioning, "configure_permissions", lambda *args: None)
     monkeypatch.setattr(provisioning, "configure_default_acls", lambda *args: None)
@@ -1166,6 +1233,7 @@ def test_rollback_restores_only_system_state(
         provisioning.OSSEC_CONF,
         provisioning.WINDOWS_RULES,
     ]
+
 
 def test_rollback_restores_active_but_disabled_systemd_service(
     tmp_path: Path,
@@ -1269,11 +1337,15 @@ def test_initialize_rolls_back_when_state_persistence_fails(
     monkeypatch.setattr(provisioning, "is_wazuh_enabled", lambda runner: False)
     monkeypatch.setattr(provisioning, "_capture_snapshot", lambda *args: _snapshot())
     monkeypatch.setattr(provisioning, "_render_ossec_config", lambda value: value)
-    monkeypatch.setattr(provisioning, "_render_windows_rule_testing", lambda value: value)
+    monkeypatch.setattr(
+        provisioning, "_render_windows_rule_testing", lambda value: value
+    )
     monkeypatch.setattr(provisioning, "ensure_group_membership", lambda *args: None)
     monkeypatch.setattr(provisioning, "stop_wazuh", lambda *args: False)
     monkeypatch.setattr(provisioning, "configure_ossec", lambda *args: None)
-    monkeypatch.setattr(provisioning, "configure_windows_rule_testing", lambda *args: None)
+    monkeypatch.setattr(
+        provisioning, "configure_windows_rule_testing", lambda *args: None
+    )
     monkeypatch.setattr(provisioning, "configure_bind_mounts", lambda *args: None)
     monkeypatch.setattr(provisioning, "configure_permissions", lambda *args: None)
     monkeypatch.setattr(provisioning, "configure_default_acls", lambda *args: None)
@@ -1324,4 +1396,3 @@ def test_initialize_rejects_malformed_state_before_host_changes(
         provisioning.initialize(tmp_path / "workspace", tmp_path / "home", user)
 
     assert events == []
-

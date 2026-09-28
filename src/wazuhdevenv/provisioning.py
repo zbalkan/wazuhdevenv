@@ -62,7 +62,9 @@ WINDOWS_RULE_EXPECTED = """  <rule id="60000" level="0">
 
 def ensure_linux() -> None:
     if sys.platform != "linux":
-        raise UnsupportedPlatformError("wazuhdevenv supports Linux only; use WSL on Windows")
+        raise UnsupportedPlatformError(
+            "wazuhdevenv supports Linux only; use WSL on Windows"
+        )
 
 
 def _write_privileged(
@@ -82,7 +84,17 @@ def _write_privileged(
             stream.flush()
             os.fsync(stream.fileno())
         runner.run(
-            ["install", "-m", mode, "-o", owner, "-g", group, str(temporary), str(target)],
+            [
+                "install",
+                "-m",
+                mode,
+                "-o",
+                owner,
+                "-g",
+                group,
+                str(temporary),
+                str(target),
+            ],
             privileged=True,
         )
     finally:
@@ -90,11 +102,20 @@ def _write_privileged(
 
 
 def _privileged_exists(runner: CommandRunner, path: Path) -> bool:
-    return runner.run(["test", "-e", str(path)], privileged=True, check=False).returncode == 0
+    return (
+        runner.run(["test", "-e", str(path)], privileged=True, check=False).returncode
+        == 0
+    )
 
 
-def _rewrite_preserving_metadata(runner: CommandRunner, target: Path, content: str) -> None:
-    metadata = runner.capture(["stat", "-Lc", "%a %U %G", str(target)], privileged=True).strip().split()
+def _rewrite_preserving_metadata(
+    runner: CommandRunner, target: Path, content: str
+) -> None:
+    metadata = (
+        runner.capture(["stat", "-Lc", "%a %U %G", str(target)], privileged=True)
+        .strip()
+        .split()
+    )
     if len(metadata) != 3:
         raise ConfigurationError(f"cannot determine metadata for {target}")
     mode, owner, group = metadata
@@ -143,7 +164,9 @@ class PackageManager:
             self.family = "rpm"
             self.command = "yum"
         else:
-            raise UnsupportedPlatformError("supported package manager not found (APT, DNF, or YUM)")
+            raise UnsupportedPlatformError(
+                "supported package manager not found (APT, DNF, or YUM)"
+            )
 
     def _trusted_query(self, executable: str) -> str:
         resolved = self.runner.trusted_which(executable)
@@ -195,7 +218,15 @@ class PackageManager:
     def _apt_install(self, packages: list[str]) -> None:
         self.runner.run(["apt-get", "update"], privileged=True)
         self.runner.run(
-            ["env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", "--no-install-recommends", *packages],
+            [
+                "env",
+                "DEBIAN_FRONTEND=noninteractive",
+                "apt-get",
+                "install",
+                "-y",
+                "--no-install-recommends",
+                *packages,
+            ],
             privileged=True,
         )
 
@@ -225,11 +256,25 @@ class PackageManager:
             if self.runner.run(
                 [self._trusted_query("rpm"), "-q", package],
                 check=False,
-            ).returncode != 0
+            ).returncode
+            != 0
         ]
 
-        coreutils_commands = ("cat", "chmod", "chown", "cp", "env", "id", "install", "rm", "stat", "test")
-        if any(self.runner.trusted_which(command) is None for command in coreutils_commands):
+        coreutils_commands = (
+            "cat",
+            "chmod",
+            "chown",
+            "cp",
+            "env",
+            "id",
+            "install",
+            "rm",
+            "stat",
+            "test",
+        )
+        if any(
+            self.runner.trusted_which(command) is None for command in coreutils_commands
+        ):
             missing.append("coreutils")
         missing = list(dict.fromkeys(missing))
         if missing:
@@ -347,7 +392,11 @@ class PackageManager:
         if self.family == "apt":
             package = "wazuh-manager"
             if requested_version:
-                package += f"={requested_version}-1" if "-" not in requested_version else f"={requested_version}"
+                package += (
+                    f"={requested_version}-1"
+                    if "-" not in requested_version
+                    else f"={requested_version}"
+                )
             try:
                 self._setup_apt_repository()
                 self._apt_install([package])
@@ -364,10 +413,16 @@ class PackageManager:
         else:
             package = "wazuh-manager"
             if requested_version:
-                package += f"-{requested_version}-1" if "-" not in requested_version else f"-{requested_version}"
+                package += (
+                    f"-{requested_version}-1"
+                    if "-" not in requested_version
+                    else f"-{requested_version}"
+                )
             try:
                 self._setup_rpm_repository()
-                self.runner.run([self.command, "-y", "install", package], privileged=True)
+                self.runner.run(
+                    [self.command, "-y", "install", package], privileged=True
+                )
             except Exception:
                 try:
                     self._set_rpm_repository_enabled(False)
@@ -381,7 +436,9 @@ class PackageManager:
 
         installed = self.installed_version()
         if not installed:
-            raise ConfigurationError("Wazuh package installation completed but version could not be determined")
+            raise ConfigurationError(
+                "Wazuh package installation completed but version could not be determined"
+            )
         return installed
 
 
@@ -400,7 +457,13 @@ def _replace_simple_tag(text: str, tag: str, value: str, allowed: set[str]) -> s
     current = match.group(2).strip()
     if current not in allowed:
         raise ConfigurationError(f"unexpected <{tag}> value: {current!r}")
-    return text[: match.start()] + match.group(1) + value + match.group(3) + text[match.end() :]
+    return (
+        text[: match.start()]
+        + match.group(1)
+        + value
+        + match.group(3)
+        + text[match.end() :]
+    )
 
 
 def _replace_block_child(
@@ -416,14 +479,24 @@ def _replace_block_child(
     if not block_match:
         raise ConfigurationError(f"missing {description} block in ossec.conf")
     block = block_match.group(0)
-    child_re = re.compile(rf"(<{re.escape(child)}>\s*)([^<]*?)(\s*</{re.escape(child)}>)")
+    child_re = re.compile(
+        rf"(<{re.escape(child)}>\s*)([^<]*?)(\s*</{re.escape(child)}>)"
+    )
     child_match = child_re.search(block)
     if not child_match:
         raise ConfigurationError(f"missing <{child}> in {description} block")
     current = child_match.group(2).strip()
     if allowed is not None and current not in allowed:
-        raise ConfigurationError(f"unexpected {description} <{child}> value: {current!r}")
-    replacement = block[: child_match.start()] + child_match.group(1) + value + child_match.group(3) + block[child_match.end() :]
+        raise ConfigurationError(
+            f"unexpected {description} <{child}> value: {current!r}"
+        )
+    replacement = (
+        block[: child_match.start()]
+        + child_match.group(1)
+        + value
+        + child_match.group(3)
+        + block[child_match.end() :]
+    )
     return text[: block_match.start()] + replacement + text[block_match.end() :]
 
 
@@ -534,7 +607,9 @@ def _render_windows_rule_testing(text: str) -> str:
     if WINDOWS_RULE_EXPECTED in text:
         return text
     if WINDOWS_RULE_DEFAULT not in text:
-        raise ConfigurationError("rule 60000 is in an unexpected state; refusing to rewrite it")
+        raise ConfigurationError(
+            "rule 60000 is in an unexpected state; refusing to rewrite it"
+        )
     return text.replace(WINDOWS_RULE_DEFAULT, WINDOWS_RULE_EXPECTED, 1)
 
 
@@ -578,14 +653,10 @@ def _wazuh_directory_entries(runner: CommandRunner, target: Path) -> list[str]:
 
 def _require_default_wazuh_content(runner: CommandRunner, target: Path) -> None:
     allowed = {
-        name
-        for directory, name in DISPOSABLE_WAZUH_SAMPLES
-        if directory == target.name
+        name for directory, name in DISPOSABLE_WAZUH_SAMPLES if directory == target.name
     }
     unexpected = [
-        name
-        for name in _wazuh_directory_entries(runner, target)
-        if name not in allowed
+        name for name in _wazuh_directory_entries(runner, target) if name not in allowed
     ]
     if unexpected:
         listed = ", ".join(sorted(unexpected))
@@ -597,10 +668,19 @@ def _require_default_wazuh_content(runner: CommandRunner, target: Path) -> None:
 
 
 def _same_bind_mount(runner: CommandRunner, source: Path, target: Path) -> bool:
-    if runner.run(["mountpoint", "-q", str(target)], privileged=True, check=False).returncode != 0:
+    if (
+        runner.run(
+            ["mountpoint", "-q", str(target)], privileged=True, check=False
+        ).returncode
+        != 0
+    ):
         return False
-    source_id = runner.capture(["stat", "-Lc", "%d:%i", str(source)], privileged=True).strip()
-    target_id = runner.capture(["stat", "-Lc", "%d:%i", str(target)], privileged=True).strip()
+    source_id = runner.capture(
+        ["stat", "-Lc", "%d:%i", str(source)], privileged=True
+    ).strip()
+    target_id = runner.capture(
+        ["stat", "-Lc", "%d:%i", str(target)], privileged=True
+    ).strip()
     return source_id == target_id
 
 
@@ -685,11 +765,14 @@ def configure_bind_mounts(
                 f"workspace path contains whitespace and cannot be persisted safely: {source}"
             )
 
-        if runner.run(
-            ["mountpoint", "-q", str(target)],
-            privileged=True,
-            check=False,
-        ).returncode == 0:
+        if (
+            runner.run(
+                ["mountpoint", "-q", str(target)],
+                privileged=True,
+                check=False,
+            ).returncode
+            == 0
+        ):
             if _same_bind_mount(runner, source, target):
                 _ensure_fstab(runner, source, target)
                 continue
@@ -699,11 +782,14 @@ def configure_bind_mounts(
 
         _require_default_wazuh_content(runner, target)
         runner.run(["mount", "--bind", str(source), str(target)], privileged=True)
-        if runner.run(
-            ["mountpoint", "-q", str(target)],
-            privileged=True,
-            check=False,
-        ).returncode != 0:
+        if (
+            runner.run(
+                ["mountpoint", "-q", str(target)],
+                privileged=True,
+                check=False,
+            ).returncode
+            != 0
+        ):
             raise ConfigurationError(f"bind mount failed: {source} -> {target}")
         _ensure_fstab(runner, source, target)
 
@@ -715,9 +801,7 @@ def ensure_group_membership(runner: CommandRunner, user: InvokingUser) -> bool:
     runner.run(["usermod", "-a", "-G", "wazuh", user.name], privileged=True)
     groups = runner.capture(["id", "-nG", user.name], privileged=True).split()
     if "wazuh" not in groups:
-        raise ConfigurationError(
-            f"failed to add {user.name} to the wazuh group"
-        )
+        raise ConfigurationError(f"failed to add {user.name} to the wazuh group")
     LOG.info(
         "Added %s to the wazuh group. Start a new login session before using "
         "Wazuh tools without sudo.",
@@ -753,18 +837,35 @@ def configure_permissions(
     owner = f"{user.name}:wazuh"
     for name in ("rules", "decoders"):
         path = workspace / name
-        runner.run(["find", str(path), "-type", "d", "-exec", "chown", owner, "{}", "+"], privileged=True)
-        runner.run(["find", str(path), "-type", "d", "-exec", "chmod", "0770", "{}", "+"], privileged=True)
-        runner.run(["find", str(path), "-type", "f", "-exec", "chown", owner, "{}", "+"], privileged=True)
-        runner.run(["find", str(path), "-type", "f", "-exec", "chmod", "0660", "{}", "+"], privileged=True)
+        runner.run(
+            ["find", str(path), "-type", "d", "-exec", "chown", owner, "{}", "+"],
+            privileged=True,
+        )
+        runner.run(
+            ["find", str(path), "-type", "d", "-exec", "chmod", "0770", "{}", "+"],
+            privileged=True,
+        )
+        runner.run(
+            ["find", str(path), "-type", "f", "-exec", "chown", owner, "{}", "+"],
+            privileged=True,
+        )
+        runner.run(
+            ["find", str(path), "-type", "f", "-exec", "chmod", "0660", "{}", "+"],
+            privileged=True,
+        )
 
 
 def _service_manager() -> str:
-    if CommandRunner.trusted_which("systemctl") and Path("/run/systemd/system").exists():
+    if (
+        CommandRunner.trusted_which("systemctl")
+        and Path("/run/systemd/system").exists()
+    ):
         return "systemd"
     if CommandRunner.trusted_which("service"):
         return "sysv"
-    raise UnsupportedPlatformError("supported service manager not found (systemd or service)")
+    raise UnsupportedPlatformError(
+        "supported service manager not found (systemd or service)"
+    )
 
 
 def is_wazuh_active(runner: CommandRunner) -> bool:
@@ -836,12 +937,17 @@ def start_wazuh(runner: CommandRunner, *, enable: bool | None = True) -> None:
         runner.run(["service", "wazuh-manager", "start"], privileged=True)
 
 
-def wait_for_logtest(runner: CommandRunner, timeout: int = 120, stable_for: int = 5) -> None:
+def wait_for_logtest(
+    runner: CommandRunner, timeout: int = 120, stable_for: int = 5
+) -> None:
     stable = 0
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         ready = (
-            runner.run(["test", "-S", str(LOGTEST_SOCKET)], privileged=True, check=False).returncode == 0
+            runner.run(
+                ["test", "-S", str(LOGTEST_SOCKET)], privileged=True, check=False
+            ).returncode
+            == 0
         )
         if ready:
             stable += 1
@@ -869,7 +975,9 @@ def wait_for_logtest(runner: CommandRunner, timeout: int = 120, stable_for: int 
 def ensure_workspace_venv(runner: CommandRunner, workspace: Path) -> None:
     venv = workspace / ".venv"
     if venv.is_symlink():
-        raise ConfigurationError(f"refusing to use symlinked virtual environment: {venv}")
+        raise ConfigurationError(
+            f"refusing to use symlinked virtual environment: {venv}"
+        )
     if not (venv / "pyvenv.cfg").is_file():
         if venv.exists() and not venv.is_dir():
             raise ConfigurationError(f"{venv} exists but is not a directory")
@@ -880,7 +988,9 @@ def ensure_workspace_venv(runner: CommandRunner, workspace: Path) -> None:
         raise ConfigurationError(f"virtual environment Python not found: {python}")
     tester_spec = os.environ.get("WAZUHTESTER_SPEC", "wazuhtester>=0.1.0rc1,<0.2")
     runner.run_as_user([str(python), "-m", "pip", "install", "--upgrade", "pip"])
-    runner.run_as_user([str(python), "-m", "pip", "install", "pytest>=8,<10", tester_spec])
+    runner.run_as_user(
+        [str(python), "-m", "pip", "install", "pytest>=8,<10", tester_spec]
+    )
 
 
 def _capture_snapshot(
@@ -909,9 +1019,7 @@ def _capture_snapshot(
         ),
         windows_backup_preexisting=_privileged_exists(
             runner,
-            WINDOWS_RULES.with_name(
-                WINDOWS_RULES.name + ".wazuhdevenv.bak"
-            ),
+            WINDOWS_RULES.with_name(WINDOWS_RULES.name + ".wazuhdevenv.bak"),
         ),
     )
 
@@ -969,7 +1077,10 @@ def _rollback_provisioning(
             wait_for_logtest(runner)
         else:
             stop_wazuh(runner)
-            if snapshot.service_was_enabled is not None and _service_manager() == "systemd":
+            if (
+                snapshot.service_was_enabled is not None
+                and _service_manager() == "systemd"
+            ):
                 action = "enable" if snapshot.service_was_enabled else "disable"
                 runner.run(
                     ["systemctl", action, "wazuh-manager"],
@@ -1007,9 +1118,7 @@ def initialize(
     runner = CommandRunner(user)
     package_manager = PackageManager(runner)
 
-    system_dependencies_installed = (
-        package_manager.ensure_system_dependencies() or []
-    )
+    system_dependencies_installed = package_manager.ensure_system_dependencies() or []
     _service_manager()
     prepare_workspace(workspace, user)
 
@@ -1047,8 +1156,7 @@ def initialize(
         target = WAZUH_HOME / "etc" / name
         expected = f"{source} {target} none bind 0 0"
         if any(
-            line.strip() == expected
-            for line in (snapshot.fstab or "").splitlines()
+            line.strip() == expected for line in (snapshot.fstab or "").splitlines()
         ):
             preexisting_fstab_entries.append(str(target))
 
@@ -1069,22 +1177,14 @@ def initialize(
                     str(path) for path in snapshot.preexisting_mounts
                 ),
                 "preexisting_fstab_entries": preexisting_fstab_entries,
-                "package_manager_family": getattr(
-                    package_manager, "family", None
-                ),
-                "system_dependencies_installed": list(
-                    system_dependencies_installed
-                ),
+                "package_manager_family": getattr(package_manager, "family", None),
+                "system_dependencies_installed": list(system_dependencies_installed),
                 "repository_before": repository_before,
                 "apt_keyring_preexisting": apt_keyring_preexisting,
                 "ossec_conf_before": snapshot.ossec_conf,
                 "windows_rules_before": snapshot.windows_rules,
-                "ossec_backup_preexisting": (
-                    snapshot.ossec_backup_preexisting
-                ),
-                "windows_backup_preexisting": (
-                    snapshot.windows_backup_preexisting
-                ),
+                "ossec_backup_preexisting": (snapshot.ossec_backup_preexisting),
+                "windows_backup_preexisting": (snapshot.windows_backup_preexisting),
             },
         }
     )

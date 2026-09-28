@@ -107,7 +107,9 @@ def _parametrize_argnames(node: ast.AST) -> list[str] | None:
     if isinstance(node, (ast.Tuple, ast.List)):
         names: list[str] = []
         for element in node.elts:
-            if not isinstance(element, ast.Constant) or not isinstance(element.value, str):
+            if not isinstance(element, ast.Constant) or not isinstance(
+                element.value, str
+            ):
                 return None
             names.append(element.value)
         return names
@@ -174,7 +176,9 @@ def collect_test_references(tests_dir: Path) -> tuple[set[str], int]:
             raise CoverageError(f"cannot parse test file {path}: {exc}") from exc
 
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_"):
+            if isinstance(
+                node, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ) and node.name.startswith("test_"):
                 test_function_count += 1
             elif isinstance(node, ast.Compare):
                 referenced.update(_rule_ids_from_compare(node))
@@ -208,7 +212,10 @@ def format_report(result: CoverageResult) -> str:
             [
                 "",
                 "Uncovered Rule IDs:",
-                *(f"  - {rule_id}" for rule_id in sorted(result.uncovered_rule_ids, key=_rule_sort_key)),
+                *(
+                    f"  - {rule_id}"
+                    for rule_id in sorted(result.uncovered_rule_ids, key=_rule_sort_key)
+                ),
             ]
         )
     return "\n".join(lines)

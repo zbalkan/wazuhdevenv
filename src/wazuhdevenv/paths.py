@@ -30,7 +30,9 @@ def _reject_system_path(path: Path, purpose: str) -> Path:
     if path == Path("/") or any(
         path == root or root in path.parents for root in FORBIDDEN_SYSTEM_ROOTS
     ):
-        raise ConfigurationError(f"refusing to use system directory as {purpose}: {path}")
+        raise ConfigurationError(
+            f"refusing to use system directory as {purpose}: {path}"
+        )
     return path
 
 

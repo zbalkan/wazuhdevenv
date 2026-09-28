@@ -61,7 +61,6 @@ def test_update_command_resolves_and_updates(
         assert update_calls == [(home, "4.14.7")]
 
 
-
 def test_init_help_does_not_advertise_reconciliation() -> None:
     help_text = cli._parser().format_help()
 
@@ -110,7 +109,6 @@ def test_configure_logging_refuses_symlinked_log_file(tmp_path: Path) -> None:
         cli._configure_logging(home, False)
 
     assert victim.read_text(encoding="utf-8") == "unchanged\n"
-
 
 
 def test_init_propagates_corpus_failure(
@@ -164,8 +162,14 @@ def test_coverage_command_uses_initialized_workspace(
     )
 
     sentinel = object()
-    monkeypatch.setattr(cli, "analyze_workspace", lambda path: sentinel if path == workspace else None)
-    monkeypatch.setattr(cli, "format_report", lambda result: "coverage report" if result is sentinel else "wrong")
+    monkeypatch.setattr(
+        cli, "analyze_workspace", lambda path: sentinel if path == workspace else None
+    )
+    monkeypatch.setattr(
+        cli,
+        "format_report",
+        lambda result: "coverage report" if result is sentinel else "wrong",
+    )
 
     assert cli._coverage_command(home) == 0
     assert capsys.readouterr().out == "coverage report\n"
@@ -177,7 +181,6 @@ def test_coverage_command_requires_initialized_workspace(tmp_path: Path) -> None
 
     with pytest.raises(cli.WazuhDevenvError, match="workspace is not initialized"):
         cli._coverage_command(home)
-
 
 
 def test_uninstall_command_removes_state_and_reports_remnants(
@@ -201,9 +204,7 @@ def test_uninstall_command_removes_state_and_reports_remnants(
         cli,
         "uninstall_environment",
         lambda path, invoking_user: (
-            result
-            if path == home and invoking_user == user
-            else None
+            result if path == home and invoking_user == user else None
         ),
     )
 

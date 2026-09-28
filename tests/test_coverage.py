@@ -20,7 +20,9 @@ def _workspace(tmp_path: Path) -> Path:
     return workspace
 
 
-def test_analyze_workspace_finds_direct_and_parametrized_pytest_rule_ids(tmp_path: Path) -> None:
+def test_analyze_workspace_finds_direct_and_parametrized_pytest_rule_ids(
+    tmp_path: Path,
+) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "rules/custom.xml").write_text(
         """
@@ -62,7 +64,9 @@ def test_parametrized(send_log, log, decoder, rule_id, rule_level):
     assert result.coverage_percent == pytest.approx(200 / 3)
 
 
-def test_collect_test_references_supports_reverse_compare_and_unittest(tmp_path: Path) -> None:
+def test_collect_test_references_supports_reverse_compare_and_unittest(
+    tmp_path: Path,
+) -> None:
     tests = tmp_path / "tests"
     tests.mkdir()
     (tests / "test_mixed.py").write_text(

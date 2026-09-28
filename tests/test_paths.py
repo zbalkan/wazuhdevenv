@@ -95,5 +95,7 @@ def test_unknown_invoking_user_is_reported_as_configuration_error(
         lambda uid: (_ for _ in ()).throw(KeyError(uid)),
     )
 
-    with pytest.raises(ConfigurationError, match="invoking user does not exist: 424242"):
+    with pytest.raises(
+        ConfigurationError, match="invoking user does not exist: 424242"
+    ):
         InvokingUser.current()

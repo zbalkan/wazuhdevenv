@@ -78,21 +78,20 @@ class CommandRunner:
         command = self.command(args, privileged=privileged)
         result = subprocess.run(command, check=False, text=True, env=env)
         if check and result.returncode != 0:
-            raise CommandError(f"command failed ({result.returncode}): {' '.join(command)}")
+            raise CommandError(
+                f"command failed ({result.returncode}): {' '.join(command)}"
+            )
         return result
 
     def capture(self, args: Sequence[str], *, privileged: bool = False) -> str:
         command = self.command(args, privileged=privileged)
-        result = subprocess.run(
-            command,
-            check=False,
-            text=True,
-            capture_output=True
-        )
+        result = subprocess.run(command, check=False, text=True, capture_output=True)
         if result.returncode != 0:
             detail = result.stderr.strip()
             suffix = f": {detail}" if detail else ""
-            raise CommandError(f"command failed ({result.returncode}): {' '.join(command)}{suffix}")
+            raise CommandError(
+                f"command failed ({result.returncode}): {' '.join(command)}{suffix}"
+            )
         return result.stdout
 
     def run_as_user(

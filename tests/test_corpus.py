@@ -143,10 +143,13 @@ def test_authenticated_requests_are_limited_to_github_api(
 
     monkeypatch.setattr(corpus.urllib.request, "urlopen", fake_urlopen)
 
-    assert corpus._request(
-        "https://api.github.com/repos/example/releases",
-        authenticated=True,
-    ) == b"[]"
+    assert (
+        corpus._request(
+            "https://api.github.com/repos/example/releases",
+            authenticated=True,
+        )
+        == b"[]"
+    )
     request = requests[0]
     assert isinstance(request, corpus.urllib.request.Request)
     assert request.get_header("Authorization") == "Bearer secret-token"
@@ -232,7 +235,9 @@ def test_install_release_activates_verified_corpus(
     current = home / "current-corpus"
     assert current.is_symlink()
     assert (current / "tests/test_payload.py").read_text(encoding="utf-8") == "new\n"
-    assert json.loads((current / "manifest.json").read_text(encoding="utf-8")) == manifest
+    assert (
+        json.loads((current / "manifest.json").read_text(encoding="utf-8")) == manifest
+    )
 
     state = json.loads((home / "state.json").read_text(encoding="utf-8"))
     assert state["active_corpus"] == "4.14.7"

@@ -29,7 +29,9 @@ def test_managed_subdirectory_rejects_symlink(tmp_path: Path) -> None:
     target.mkdir()
     (home / "cache").symlink_to(target, target_is_directory=True)
 
-    with pytest.raises(ConfigurationError, match="managed state directory must not be a symlink"):
+    with pytest.raises(
+        ConfigurationError, match="managed state directory must not be a symlink"
+    ):
         ensure_managed_home(home)
 
 
@@ -48,14 +50,21 @@ def test_lock_file_rejects_symlink(tmp_path: Path) -> None:
     target.touch()
     managed_lock_path(home).symlink_to(target)
 
-    with pytest.raises(ConfigurationError, match="lock file must not be a symlink"), managed_lock(home):
-            pass
+    with (
+        pytest.raises(ConfigurationError, match="lock file must not be a symlink"),
+        managed_lock(home),
+    ):
+        pass
 
 
 def test_managed_lock_prevents_second_writer(tmp_path: Path) -> None:
     home = tmp_path / "managed"
-    with managed_lock(home), pytest.raises(RuntimeError, match="another wazuhdevenv operation"), managed_lock(home):
-                pass
+    with (
+        managed_lock(home),
+        pytest.raises(RuntimeError, match="another wazuhdevenv operation"),
+        managed_lock(home),
+    ):
+        pass
 
 
 def test_managed_lock_survives_managed_home_deletion(tmp_path: Path) -> None:
@@ -66,8 +75,11 @@ def test_managed_lock_survives_managed_home_deletion(tmp_path: Path) -> None:
     with managed_lock(home):
         home.rmdir()
         assert lock_path.exists()
-        with pytest.raises(RuntimeError, match="another wazuhdevenv operation"), managed_lock(home):
-                pass
+        with (
+            pytest.raises(RuntimeError, match="another wazuhdevenv operation"),
+            managed_lock(home),
+        ):
+            pass
 
     assert lock_path.exists()
 
@@ -92,7 +104,7 @@ def test_save_state_rejects_unsupported_schema(
     assert not (tmp_path / "state.json").exists()
 
 
-@pytest.mark.parametrize("schema_json", ["2", "true", "false", "1.0", "\"1\""])
+@pytest.mark.parametrize("schema_json", ["2", "true", "false", "1.0", '"1"'])
 def test_load_state_rejects_unsupported_schema(
     tmp_path: Path,
     schema_json: str,

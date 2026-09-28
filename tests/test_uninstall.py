@@ -284,10 +284,7 @@ def test_prepare_package_directories_preflights_both_targets_before_mutation() -
     ):
         uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
-    assert not any(
-        args[0] in {"find", "mkdir", "chown", "chmod"}
-        for args in commands
-    )
+    assert not any(args[0] in {"find", "mkdir", "chown", "chmod"} for args in commands)
 
 
 def test_prepare_package_directories_refuses_nested_mount_before_mutation() -> None:
@@ -323,10 +320,7 @@ def test_prepare_package_directories_refuses_nested_mount_before_mutation() -> N
     ):
         uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
-    assert not any(
-        args[0] in {"find", "mkdir", "chown", "chmod"}
-        for args in commands
-    )
+    assert not any(args[0] in {"find", "mkdir", "chown", "chmod"} for args in commands)
 
 
 def test_remove_fstab_entries_preserves_unrelated_content_and_reloads_systemd(
@@ -342,10 +336,7 @@ def test_remove_fstab_entries_preserves_unrelated_content_and_reloads_systemd(
         f"{decoders} /var/ossec/etc/decoders none bind 0 0\n"
         "# keep this comment\n"
     )
-    expected = (
-        "UUID=root / ext4 defaults 0 1\n"
-        "# keep this comment\n"
-    )
+    expected = "UUID=root / ext4 defaults 0 1\n# keep this comment\n"
     current = original
     writes: list[str] = []
     commands: list[list[str]] = []
@@ -419,9 +410,7 @@ def test_remove_fstab_entries_refuses_changed_target(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     workspace = tmp_path / "workspace"
-    original = (
-        "/somewhere-else /var/ossec/etc/rules none bind 0 0\n"
-    )
+    original = "/somewhere-else /var/ossec/etc/rules none bind 0 0\n"
 
     monkeypatch.setattr(
         uninstall,
@@ -517,9 +506,7 @@ def test_detach_workspace_changed_fstab_fails_before_mutation(
     monkeypatch.setattr(
         uninstall,
         "_preflight_fstab_entries",
-        lambda *args: (_ for _ in ()).throw(
-            ConfigurationError("fstab entry changed")
-        ),
+        lambda *args: (_ for _ in ()).throw(ConfigurationError("fstab entry changed")),
     )
     monkeypatch.setattr(
         uninstall,
@@ -617,7 +604,6 @@ def test_preflight_wazuh_version_allows_removed_package() -> None:
         FakePackageManager(),  # type: ignore
         {"wazuh_version": "4.14.8"},
     )
-
 
 
 def test_targets_rejects_malformed_provenance() -> None:

@@ -21,7 +21,9 @@ def ensure_managed_home(path: Path) -> None:
     for name in ("cache", "corpora", "logs"):
         child = path / name
         if child.is_symlink():
-            raise ConfigurationError(f"managed state directory must not be a symlink: {child}")
+            raise ConfigurationError(
+                f"managed state directory must not be a symlink: {child}"
+            )
         child.mkdir(exist_ok=True)
 
 
@@ -68,7 +70,9 @@ def load_state(path: Path) -> dict[str, object]:
     if not state_path.exists():
         return {"schema_version": 1}
     data = json.loads(state_path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict) or not _valid_schema_version(data.get("schema_version")):
+    if not isinstance(data, dict) or not _valid_schema_version(
+        data.get("schema_version")
+    ):
         raise ValueError(f"unsupported state file: {state_path}")
     return data
 

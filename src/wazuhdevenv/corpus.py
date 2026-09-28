@@ -20,7 +20,9 @@ from pathlib import Path, PurePosixPath
 from .errors import CorpusError
 from .state import load_state, save_state
 
-RELEASES_API = "https://api.github.com/repos/zbalkan/wazuh-rule-tests/releases?per_page=100"
+RELEASES_API = (
+    "https://api.github.com/repos/zbalkan/wazuh-rule-tests/releases?per_page=100"
+)
 USER_AGENT = "wazuhdevenv"
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -41,7 +43,9 @@ def _request(url: str, *, authenticated: bool = False) -> bytes:
     headers = {"User-Agent": USER_AGENT}
     if authenticated:
         if not url.startswith("https://api.github.com/"):
-            raise CorpusError("authenticated downloads are restricted to api.github.com")
+            raise CorpusError(
+                "authenticated downloads are restricted to api.github.com"
+            )
         headers["Accept"] = "application/vnd.github+json"
         token = os.environ.get("GITHUB_TOKEN")
         if token:
@@ -78,7 +82,11 @@ def resolve_release(wazuh_version: str) -> CorpusRelease:
     invalid_manifests = 0
 
     for release in releases:
-        if not isinstance(release, dict) or release.get("draft") or release.get("prerelease"):
+        if (
+            not isinstance(release, dict)
+            or release.get("draft")
+            or release.get("prerelease")
+        ):
             continue
 
         manifest_url = _asset_url(release, "manifest.json")
@@ -126,7 +134,9 @@ def _verify_checksum(archive: Path, checksum_text: str) -> str:
         raise CorpusError("invalid SHA-256 checksum asset")
     actual = hashlib.sha256(archive.read_bytes()).hexdigest()
     if actual != expected:
-        raise CorpusError(f"corpus checksum mismatch: expected {expected}, got {actual}")
+        raise CorpusError(
+            f"corpus checksum mismatch: expected {expected}, got {actual}"
+        )
     return actual
 
 
@@ -179,7 +189,9 @@ def install_release(home: Path, release: CorpusRelease) -> None:
     corpora = home / "corpora"
     for directory in (cache, corpora):
         if directory.is_symlink():
-            raise CorpusError(f"managed corpus directory must not be a symlink: {directory}")
+            raise CorpusError(
+                f"managed corpus directory must not be a symlink: {directory}"
+            )
         directory.mkdir(parents=True, exist_ok=True)
 
     archive = cache / f"wazuh-rule-tests-{release.version}.zip"
@@ -252,6 +264,11 @@ def update_corpus(home: Path, wazuh_version: str) -> str:
         install_release(home, release)
     except CorpusError:
         raise
-    except (json.JSONDecodeError, UnicodeDecodeError, zipfile.BadZipFile, OSError) as exc:
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+        zipfile.BadZipFile,
+        OSError,
+    ) as exc:
         raise CorpusError(f"failed to install rule-test corpus: {exc}") from exc
     return release.version

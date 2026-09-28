@@ -28,21 +28,29 @@ def _parser() -> argparse.ArgumentParser:
         prog="wazuhdevenv",
         description="Provision and maintain a local Wazuh rule-development environment.",
     )
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument("-v", "--verbose", action="store_true")
 
     commands = parser.add_subparsers(dest="command", required=True)
 
     init = commands.add_parser("init", help="Provision a development workspace")
-    init.add_argument("path", nargs="?", help="Workspace path (default: current directory)")
-    init.add_argument("--wazuh-version", help="Install or require an exact Wazuh version")
+    init.add_argument(
+        "path", nargs="?", help="Workspace path (default: current directory)"
+    )
+    init.add_argument(
+        "--wazuh-version", help="Install or require an exact Wazuh version"
+    )
     init.add_argument(
         "--skip-corpus",
         action="store_true",
         help="Do not download the default rule-test corpus",
     )
 
-    update = commands.add_parser("update", help="Install or refresh managed rule-test content")
+    update = commands.add_parser(
+        "update", help="Install or refresh managed rule-test content"
+    )
     update.add_argument(
         "--check",
         action="store_true",
@@ -71,7 +79,9 @@ def _configure_logging(home: Path, verbose: bool) -> None:
         fd = os.open(log_path, flags, 0o600)
     except OSError as exc:
         if exc.errno == errno.ELOOP:
-            raise ConfigurationError(f"log file must not be a symlink: {log_path}") from exc
+            raise ConfigurationError(
+                f"log file must not be a symlink: {log_path}"
+            ) from exc
         raise
 
     try:
@@ -81,7 +91,9 @@ def _configure_logging(home: Path, verbose: bool) -> None:
         raise
 
     handlers.append(logging.StreamHandler(stream))
-    logging.basicConfig(level=level, format="%(levelname)s %(message)s", handlers=handlers)
+    logging.basicConfig(
+        level=level, format="%(levelname)s %(message)s", handlers=handlers
+    )
 
 
 def _installed_wazuh_version(user: InvokingUser, home: Path) -> str:
@@ -95,7 +107,11 @@ def _installed_wazuh_version(user: InvokingUser, home: Path) -> str:
             "running 'wazuhdevenv update'"
         )
     if recorded and recorded != actual:
-        LOG.warning("Recorded Wazuh version %s differs from installed version %s", recorded, actual)
+        LOG.warning(
+            "Recorded Wazuh version %s differs from installed version %s",
+            recorded,
+            actual,
+        )
     return actual
 
 

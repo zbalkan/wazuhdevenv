@@ -104,7 +104,9 @@ def test_unprivileged_command_uses_normal_path(
     monkeypatch.setattr(
         shutil,
         "which",
-        lambda executable, path=None: "/usr/local/bin/tool" if executable == "tool" else None,
+        lambda executable, path=None: (
+            "/usr/local/bin/tool" if executable == "tool" else None
+        ),
     )
 
     assert CommandRunner(_user(tmp_path)).command(["tool", "arg"]) == [
@@ -113,7 +115,9 @@ def test_unprivileged_command_uses_normal_path(
     ]
 
 
-def test_missing_command_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_missing_command_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda executable, path=None: None)
 
     with pytest.raises(CommandError, match="required command not found"):
