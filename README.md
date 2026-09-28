@@ -11,7 +11,7 @@ The tooling is deliberately separated by responsibility:
 | Project | Responsibility |
 | --- | --- |
 | [`wazuhtester`](https://github.com/zbalkan/wazuhtester) | reusable Wazuh logtest library, CLI, and pytest plugin |
-| [`wazuh-rule-tests`](https://github.com/zbalkan/https://github.com/zbalkan/wazuh-rule-tests) | versioned pytest regression corpus for built-in Wazuh rules |
+| [`wazuh-rule-tests`](https://github.com/zbalkan/wazuh-rule-tests) | versioned pytest regression corpus for built-in Wazuh rules |
 | [`wazuhcoverage`](https://github.com/zbalkan/wazuhcoverage) | runtime Wazuh JSON archive coverage analysis |
 | [`wazuhtestgen`](https://github.com/zbalkan/wazuhtestgen) | generation of pytest rule-test content |
 | `wazuhdevenv` | environment installation, configuration, managed content, and orchestration |
