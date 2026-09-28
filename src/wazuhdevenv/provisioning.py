@@ -354,7 +354,7 @@ class PackageManager:
             except Exception:
                 try:
                     self._disable_apt_repository()
-                except Exception as cleanup_error:
+                except Exception as cleanup_error:  # noqa: BLE001
                     LOG.error(
                         "Could not disable the Wazuh APT repository after setup or installation failed: %s",
                         cleanup_error,
@@ -371,7 +371,7 @@ class PackageManager:
             except Exception:
                 try:
                     self._set_rpm_repository_enabled(False)
-                except Exception as cleanup_error:
+                except Exception as cleanup_error:  # noqa: BLE001
                     LOG.error(
                         "Could not disable the Wazuh RPM repository after setup or installation failed: %s",
                         cleanup_error,
@@ -941,7 +941,7 @@ def _rollback_provisioning(
         try:
             if _same_bind_mount(runner, source, target):
                 runner.run(["umount", str(target)], privileged=True)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             recovery_errors.append(f"unmount {target}: {exc}")
 
     fstab_path = Path("/etc/fstab")
@@ -951,7 +951,7 @@ def _rollback_provisioning(
                 runner.run(["rm", "-f", str(fstab_path)], privileged=True)
         else:
             _restore_text_if_changed(runner, fstab_path, snapshot.fstab)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         recovery_errors.append(f"restore {fstab_path}: {exc}")
 
     for path, original in (
@@ -960,7 +960,7 @@ def _rollback_provisioning(
     ):
         try:
             _restore_text_if_changed(runner, path, original)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             recovery_errors.append(f"restore {path}: {exc}")
 
     try:
@@ -975,7 +975,7 @@ def _rollback_provisioning(
                     ["systemctl", action, "wazuh-manager"],
                     privileged=True,
                 )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         recovery_errors.append(f"restore Wazuh Manager service state: {exc}")
 
     if recovery_errors:

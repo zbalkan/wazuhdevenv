@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 import shutil
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
 from .errors import ConfigurationError, WazuhDevenvError
 from .paths import InvokingUser
@@ -14,8 +14,8 @@ from .provisioning import (
     APT_REPOSITORY,
     OSSEC_CONF,
     RPM_REPOSITORY,
-    WINDOWS_RULES,
     WAZUH_HOME,
+    WINDOWS_RULES,
     PackageManager,
     _privileged_exists,
     _read_optional_privileged,
@@ -63,7 +63,7 @@ def format_uninstall_report(result: UninstallResult, managed_home: Path) -> str:
             "Remnants",
             (
                 *result.remnants,
-                "persistent operation lock retained for serialization: "
+                "persistent operation lock retained for serialization: ",
                 f"{managed_lock_path(managed_home)}",
             ),
         ),
@@ -642,10 +642,10 @@ def uninstall_environment(home: Path, user: InvokingUser) -> UninstallResult:
         f"user workspace content: {workspace / 'tests'}",
     ]
     remnants: list[str] = [
-        "the wazuhdevenv Python/pipx installation itself is not self-removed; "
+        "the wazuhdevenv Python/pipx installation itself is not self-removed; ",
         "remove it separately with the installer used to install the CLI",
-        "workspace rule/decoder modes set during initialization are not "
-        "reconstructed; directories/files may retain 0770/0660 modes, and "
+        "workspace rule/decoder modes set during initialization are not ",
+        "reconstructed; directories/files may retain 0770/0660 modes, and ",
         "pre-initialization non-primary group ownership is not tracked",
     ]
 

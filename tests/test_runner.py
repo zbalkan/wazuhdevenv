@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from wazuhdevenv.errors import CommandError
-from wazuhdevenv.paths import InvokingUser
-from wazuhdevenv.runner import CommandRunner, TRUSTED_EXEC_PATH
+from wazuhdevenv.errors import CommandError  # type: ignore
+from wazuhdevenv.paths import InvokingUser  # type: ignore
+from wazuhdevenv.runner import TRUSTED_EXEC_PATH, CommandRunner  # type: ignore
 
 
 def _user(tmp_path: Path) -> InvokingUser:

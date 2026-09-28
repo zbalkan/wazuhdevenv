@@ -4,13 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from wazuhdevenv.coverage import (
+from wazuhdevenv.coverage import (  # type: ignore
     analyze_workspace,
     collect_rule_ids,
     collect_test_references,
     format_report,
 )
-from wazuhdevenv.errors import CoverageError
+from wazuhdevenv.errors import CoverageError  # type: ignore
 
 
 def _workspace(tmp_path: Path) -> Path:

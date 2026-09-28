@@ -3,8 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from wazuhdevenv.errors import ConfigurationError
-from wazuhdevenv.paths import InvokingUser, managed_home, resolve_workspace
+from wazuhdevenv.errors import ConfigurationError  # type: ignore
+from wazuhdevenv.paths import (  # type: ignore
+    InvokingUser,
+    managed_home,
+    resolve_workspace,
+)
 
 
 def test_workspace_is_resolved(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import wazuhdevenv.uninstall as uninstall
-from wazuhdevenv.errors import ConfigurationError
+from wazuhdevenv import uninstall  # type: ignore
+from wazuhdevenv.errors import ConfigurationError  # type: ignore
 
 
 def test_required_state_accepts_legacy_state(tmp_path: Path) -> None:
@@ -86,7 +86,7 @@ def test_remove_mounts_unmounts_and_verifies_targets(
 
     monkeypatch.setattr(uninstall, "_same_bind_mount", lambda *args: True)
 
-    removed = uninstall._remove_mounts(FakeRunner(), workspace, set())
+    removed = uninstall._remove_mounts(FakeRunner(), workspace, set())  # type: ignore
 
     assert events == [
         ["umount", "/var/ossec/etc/rules"],
@@ -124,7 +124,7 @@ def test_remove_mounts_refuses_to_continue_if_target_remains_mounted(
         ConfigurationError,
         match="failed to unmount /var/ossec/etc/rules",
     ):
-        uninstall._remove_mounts(FakeRunner(), workspace, set())
+        uninstall._remove_mounts(FakeRunner(), workspace, set())  # type: ignore
 
 
 def test_prepare_package_directories_empties_and_restores_metadata() -> None:
@@ -156,7 +156,7 @@ def test_prepare_package_directories_empties_and_restores_metadata() -> None:
             assert privileged is True
             return ""
 
-    uninstall._prepare_package_directories(FakeRunner())
+    uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
     for target in (
         "/var/ossec/etc/rules",
@@ -217,7 +217,7 @@ def test_prepare_package_directories_creates_missing_target() -> None:
             assert privileged is True
             return ""
 
-    uninstall._prepare_package_directories(FakeRunner())
+    uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
     for target in (
         "/var/ossec/etc/rules",
@@ -245,7 +245,7 @@ def test_prepare_package_directories_refuses_mounted_target() -> None:
         ConfigurationError,
         match="/var/ossec/etc/rules is still mounted",
     ):
-        uninstall._prepare_package_directories(FakeRunner())
+        uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
 
 def test_prepare_package_directories_preflights_both_targets_before_mutation() -> None:
@@ -282,7 +282,7 @@ def test_prepare_package_directories_preflights_both_targets_before_mutation() -
         ConfigurationError,
         match="/var/ossec/etc/decoders is still mounted",
     ):
-        uninstall._prepare_package_directories(FakeRunner())
+        uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
     assert not any(
         args[0] in {"find", "mkdir", "chown", "chmod"}
@@ -321,7 +321,7 @@ def test_prepare_package_directories_refuses_nested_mount_before_mutation() -> N
         ConfigurationError,
         match="contains mounted content",
     ):
-        uninstall._prepare_package_directories(FakeRunner())
+        uninstall._prepare_package_directories(FakeRunner())  # type: ignore
 
     assert not any(
         args[0] in {"find", "mkdir", "chown", "chmod"}
@@ -377,7 +377,7 @@ def test_remove_fstab_entries_preserves_unrelated_content_and_reloads_systemd(
     monkeypatch.setattr(uninstall, "_rewrite_preserving_metadata", rewrite_fstab)
     monkeypatch.setattr(uninstall, "_service_manager", lambda: "systemd")
 
-    removed = uninstall._remove_fstab_entries(FakeRunner(), workspace, set())
+    removed = uninstall._remove_fstab_entries(FakeRunner(), workspace, set())  # type: ignore
 
     assert removed == [
         "/etc/fstab entry for /var/ossec/etc/rules",
@@ -411,7 +411,7 @@ def test_remove_fstab_entries_refuses_if_rewrite_does_not_persist(
         ConfigurationError,
         match="failed to remove managed /etc/fstab entries",
     ):
-        uninstall._remove_fstab_entries(object(), workspace, set())
+        uninstall._remove_fstab_entries(object(), workspace, set())  # type: ignore
 
 
 def test_remove_fstab_entries_refuses_changed_target(
@@ -430,7 +430,7 @@ def test_remove_fstab_entries_refuses_changed_target(
     )
 
     with pytest.raises(ConfigurationError, match="changed since initialization"):
-        uninstall._remove_fstab_entries(object(), workspace, set())
+        uninstall._remove_fstab_entries(object(), workspace, set())  # type: ignore
 
 
 def test_remove_fstab_entries_refuses_whitespace_changed_managed_line(
@@ -448,8 +448,7 @@ def test_remove_fstab_entries_refuses_whitespace_changed_managed_line(
     )
 
     with pytest.raises(ConfigurationError, match="changed since initialization"):
-        uninstall._remove_fstab_entries(object(), workspace, set())
-
+        uninstall._remove_fstab_entries(object(), workspace, set())  # type: ignore
 
 
 def test_detach_workspace_validates_fstab_before_mutation(
@@ -477,16 +476,16 @@ def test_detach_workspace_validates_fstab_before_mutation(
     monkeypatch.setattr(
         uninstall,
         "_remove_mounts",
-        lambda *args: stages.append("mounts") or ["mounts removed"],
+        lambda *args: stages.append("mounts") or ["mounts removed"],  # type: ignore
     )
     monkeypatch.setattr(
         uninstall,
         "_remove_fstab_entries",
-        lambda *args: stages.append("fstab") or ["fstab removed"],
+        lambda *args: stages.append("fstab") or ["fstab removed"],  # type: ignore
     )
 
     removed = uninstall._detach_workspace(
-        object(),
+        object(),  # type: ignore
         workspace,
         set(),
         set(),
@@ -530,12 +529,12 @@ def test_detach_workspace_changed_fstab_fails_before_mutation(
     monkeypatch.setattr(
         uninstall,
         "_remove_mounts",
-        lambda *args: mutations.append("mounts") or [],
+        lambda *args: mutations.append("mounts") or [],  # type: ignore
     )
 
     with pytest.raises(ConfigurationError, match="fstab entry changed"):
         uninstall._detach_workspace(
-            object(),
+            object(),  # type: ignore
             workspace,
             set(),
             set(),
@@ -574,7 +573,7 @@ def test_detach_workspace_rejects_retained_mount_before_mutation(
     monkeypatch.setattr(
         uninstall,
         "_remove_mounts",
-        lambda *args: mutations.append("mounts") or [],
+        lambda *args: mutations.append("mounts") or [],  # type: ignore
     )
     monkeypatch.setattr(
         uninstall,
@@ -587,7 +586,7 @@ def test_detach_workspace_rejects_retained_mount_before_mutation(
         match="cannot remove tool-installed Wazuh",
     ):
         uninstall._detach_workspace(
-            FakeRunner(),
+            FakeRunner(),  # type: ignore
             workspace,
             {retained},
             set(),
@@ -604,7 +603,7 @@ def test_preflight_wazuh_version_rejects_changed_installation() -> None:
 
     with pytest.raises(ConfigurationError, match="changed since initialization"):
         uninstall._preflight_wazuh_version(
-            FakePackageManager(),
+            FakePackageManager(),  # type: ignore
             {"wazuh_version": "4.14.8"},
         )
 
@@ -615,7 +614,7 @@ def test_preflight_wazuh_version_allows_removed_package() -> None:
             return None
 
     uninstall._preflight_wazuh_version(
-        FakePackageManager(),
+        FakePackageManager(),  # type: ignore
         {"wazuh_version": "4.14.8"},
     )
 
@@ -643,7 +642,7 @@ def test_restore_service_restarts_with_recorded_enablement(
     )
 
     uninstall._restore_service(
-        object(),
+        object(),  # type: ignore
         was_active=True,
         was_enabled=False,
     )
@@ -682,7 +681,7 @@ def test_remove_wazuh_recreates_directories_before_package_removal(
         lambda runner: stages.append("directories"),
     )
 
-    assert uninstall._remove_wazuh(FakeRunner(), FakePackageManager()) is True
+    assert uninstall._remove_wazuh(FakeRunner(), FakePackageManager()) is True  # type: ignore
     assert stages == [
         "directories",
         ["dnf", "-y", "remove", "wazuh-manager"],
@@ -714,8 +713,8 @@ def test_remove_group_membership_is_idempotent() -> None:
             return "tester users\n"
 
     removed = uninstall._remove_group_membership(
-        FakeRunner(),
-        type(
+        FakeRunner(),  # type: ignore
+        type(  # type: ignore
             "User",
             (),
             {"name": "tester"},
@@ -772,7 +771,7 @@ def test_preflight_restore_accepts_already_restored_state() -> None:
             return original
 
     uninstall._preflight_restore(
-        FakeRunner(),
+        FakeRunner(),  # type: ignore
         Path("/var/ossec/etc/ossec.conf"),
         original,
         lambda value: value.replace("original", "configured"),
@@ -793,7 +792,7 @@ def test_preflight_restore_rejects_unattributed_later_change() -> None:
 
     with pytest.raises(ConfigurationError, match="changed after initialization"):
         uninstall._preflight_restore(
-            FakeRunner(),
+            FakeRunner(),  # type: ignore
             Path("/var/ossec/etc/ossec.conf"),
             "<config>original</config>",
             lambda value: value.replace("original", "configured"),

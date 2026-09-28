@@ -55,7 +55,7 @@ def _request(url: str, *, authenticated: bool = False) -> bytes:
 
 
 def _asset_url(release: dict[str, object], name: str) -> str | None:
-    for asset in release.get("assets", []):
+    for asset in release.get("assets", []):  # type: ignore
         if isinstance(asset, dict) and asset.get("name") == name:
             url = asset.get("browser_download_url")
             return str(url) if url else None

@@ -66,7 +66,7 @@ def _configure_logging(home: Path, verbose: bool) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     handlers: list[logging.Handler] = [logging.StreamHandler()]
     log_path = home / "logs" / "wazuhdevenv.log"
-    flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW
+    flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW  # type: ignore
     try:
         fd = os.open(log_path, flags, 0o600)
     except OSError as exc:
@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     logging_ready = False
 
     try:
-        if os.geteuid() == 0:
+        if os.geteuid() == 0:  # type: ignore
             raise ConfigurationError(
                 "run wazuhdevenv as the developer, not as root; "
                 "the tool invokes sudo only for system changes"

@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-import wazuhdevenv.cli as cli
-from wazuhdevenv.corpus import CorpusRelease
-from wazuhdevenv.paths import InvokingUser
-from wazuhdevenv.uninstall import UninstallResult
+from wazuhdevenv import cli  # type: ignore
+from wazuhdevenv.corpus import CorpusRelease  # type: ignore
+from wazuhdevenv.paths import InvokingUser  # type: ignore
+from wazuhdevenv.uninstall import UninstallResult  # type: ignore
 
 
 def _user(tmp_path: Path) -> InvokingUser:
@@ -41,13 +41,13 @@ def test_update_command_resolves_and_updates(
     monkeypatch.setattr(
         cli,
         "resolve_release",
-        lambda version: resolve_calls.append(version) or release,
+        lambda version: resolve_calls.append(version) or release,  # type: ignore
     )
     monkeypatch.setattr(
         cli,
         "update_corpus",
         lambda path, version: (
-            update_calls.append((path, version)) or "4.14.7"
+            update_calls.append((path, version)) or "4.14.7"  # type: ignore
         ),
     )
 
@@ -265,7 +265,7 @@ def test_main_holds_lock_through_uninstall_deletion(
     monkeypatch.setattr(
         cli,
         "uninstall_environment",
-        lambda path, invoking_user: events.append("uninstall") or result,
+        lambda path, invoking_user: events.append("uninstall") or result,  # type: ignore
     )
     monkeypatch.setattr(
         cli.shutil,

@@ -9,7 +9,6 @@ from pathlib import Path
 
 from .errors import ConfigurationError
 
-
 FORBIDDEN_SYSTEM_ROOTS = (
     Path("/etc"),
     Path("/var"),
@@ -43,12 +42,12 @@ class InvokingUser:
     home: Path
 
     @classmethod
-    def current(cls) -> "InvokingUser":
+    def current(cls) -> InvokingUser:
         try:
-            entry = pwd.getpwuid(os.getuid())
+            entry = pwd.getpwuid(os.getuid())  # type: ignore
         except KeyError as exc:
             raise ConfigurationError(
-                f"invoking user does not exist: {os.getuid()}"
+                f"invoking user does not exist: {os.getuid()}"  # type: ignore
             ) from exc
         return cls(entry.pw_name, entry.pw_uid, entry.pw_gid, Path(entry.pw_dir))
 

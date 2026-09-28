@@ -7,9 +7,9 @@ import fcntl
 import json
 import os
 import tempfile
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
 
 from .errors import ConfigurationError
 
@@ -31,10 +31,10 @@ def managed_lock_path(path: Path) -> Path:
 
 
 @contextmanager
-def managed_lock(path: Path) -> Iterator[None]:
+def managed_lock(path: Path) -> Generator[None]:
     lock_path = managed_lock_path(path)
     lock_path.parent.mkdir(parents=True, exist_ok=True)
-    flags = os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW
+    flags = os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW  # type: ignore
     try:
         fd = os.open(lock_path, flags, 0o600)
     except OSError as exc:
@@ -46,7 +46,7 @@ def managed_lock(path: Path) -> Iterator[None]:
 
     with os.fdopen(fd, "a+", encoding="utf-8") as stream:
         try:
-            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)  # type: ignore
         except BlockingIOError as exc:
             raise RuntimeError(
                 "another wazuhdevenv operation is already running"
@@ -54,7 +54,7 @@ def managed_lock(path: Path) -> Iterator[None]:
         try:
             yield
         finally:
-            fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+            fcntl.flock(stream.fileno(), fcntl.LOCK_UN)  # type: ignore
 
 
 def _valid_schema_version(value: object) -> bool:

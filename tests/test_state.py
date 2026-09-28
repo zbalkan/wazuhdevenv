@@ -1,10 +1,9 @@
-import json
 from pathlib import Path
 
 import pytest
 
-from wazuhdevenv.errors import ConfigurationError
-from wazuhdevenv.state import (
+from wazuhdevenv.errors import ConfigurationError  # type: ignore
+from wazuhdevenv.state import (  # type: ignore
     ensure_managed_home,
     load_state,
     managed_lock,
@@ -49,16 +48,13 @@ def test_lock_file_rejects_symlink(tmp_path: Path) -> None:
     target.touch()
     managed_lock_path(home).symlink_to(target)
 
-    with pytest.raises(ConfigurationError, match="lock file must not be a symlink"):
-        with managed_lock(home):
+    with pytest.raises(ConfigurationError, match="lock file must not be a symlink"), managed_lock(home):
             pass
 
 
 def test_managed_lock_prevents_second_writer(tmp_path: Path) -> None:
     home = tmp_path / "managed"
-    with managed_lock(home):
-        with pytest.raises(RuntimeError, match="another wazuhdevenv operation"):
-            with managed_lock(home):
+    with managed_lock(home), pytest.raises(RuntimeError, match="another wazuhdevenv operation"), managed_lock(home):
                 pass
 
 
@@ -70,8 +66,7 @@ def test_managed_lock_survives_managed_home_deletion(tmp_path: Path) -> None:
     with managed_lock(home):
         home.rmdir()
         assert lock_path.exists()
-        with pytest.raises(RuntimeError, match="another wazuhdevenv operation"):
-            with managed_lock(home):
+        with pytest.raises(RuntimeError, match="another wazuhdevenv operation"), managed_lock(home):
                 pass
 
     assert lock_path.exists()

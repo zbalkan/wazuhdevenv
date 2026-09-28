@@ -7,12 +7,13 @@ import stat
 import warnings
 import zipfile
 from pathlib import Path
+from typing import Self
 
 import pytest
 
-import wazuhdevenv.corpus as corpus
-from wazuhdevenv.corpus import CorpusRelease
-from wazuhdevenv.errors import CorpusError
+from wazuhdevenv import corpus  # type: ignore
+from wazuhdevenv.corpus import CorpusRelease  # type: ignore
+from wazuhdevenv.errors import CorpusError  # type: ignore
 
 
 def _manifest(version: str) -> dict[str, object]:
@@ -100,7 +101,7 @@ class FakeResponse:
     def __init__(self, content: bytes) -> None:
         self.content = content
 
-    def __enter__(self) -> "FakeResponse":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:

@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import os
 import shutil
-from pathlib import Path
 import subprocess
 from collections.abc import Sequence
+from pathlib import Path
 
 from .errors import CommandError
 from .paths import InvokingUser
-
 
 TRUSTED_EXEC_PATH = "/usr/sbin:/usr/bin:/sbin:/bin"
 TRUSTED_PRIVILEGED_EXEC_ROOTS = (
@@ -88,8 +87,7 @@ class CommandRunner:
             command,
             check=False,
             text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True
         )
         if result.returncode != 0:
             detail = result.stderr.strip()

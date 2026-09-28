@@ -6,11 +6,14 @@ from types import SimpleNamespace
 
 import pytest
 
-import wazuhdevenv.provisioning as provisioning
-from wazuhdevenv.errors import ConfigurationError
-from wazuhdevenv.paths import InvokingUser
-from wazuhdevenv.provisioning import PackageManager, ProvisioningSnapshot
-from wazuhdevenv.runner import CommandRunner
+from wazuhdevenv import provisioning  # type: ignore
+from wazuhdevenv.errors import ConfigurationError  # type: ignore
+from wazuhdevenv.paths import InvokingUser  # type: ignore
+from wazuhdevenv.provisioning import (  # type: ignore
+    PackageManager,
+    ProvisioningSnapshot,
+)
+from wazuhdevenv.runner import CommandRunner  # type: ignore
 
 
 class RecordingRunner:
@@ -60,7 +63,7 @@ class DpkgRunner:
 
 def _apt_manager(runner: object) -> PackageManager:
     manager = object.__new__(PackageManager)
-    manager.runner = runner
+    manager.runner = runner  # type: ignore
     manager.family = "apt"
     manager.command = "apt-get"
     return manager
@@ -196,7 +199,7 @@ def test_default_wazuh_content_is_accepted(
 
     target = tmp_path / target_name
     provisioning._require_default_wazuh_content(
-        runner,
+        runner,  # type: ignore
         target,
     )
 
@@ -225,11 +228,11 @@ def test_existing_custom_wazuh_content_is_rejected(
     ):
         target = tmp_path / target_name
         provisioning._require_default_wazuh_content(
-            runner,
+            runner,  # type: ignore
             target,
         )
 
-    assert runner.find_targets == [target]
+        assert runner.find_targets == [target]
 
 
 def test_configure_bind_mounts_checks_wazuh_directories_before_mounting(
@@ -264,7 +267,7 @@ def test_configure_bind_mounts_checks_wazuh_directories_before_mounting(
     monkeypatch.setattr(provisioning, "_require_default_wazuh_content", require_default)
     monkeypatch.setattr(provisioning, "_ensure_fstab", lambda *args: None)
 
-    provisioning.configure_bind_mounts(BindRunner(), tmp_path / "workspace")
+    provisioning.configure_bind_mounts(BindRunner(), tmp_path / "workspace")  # type: ignore
 
     expected = [
         provisioning.WAZUH_HOME / "etc/rules",
@@ -313,7 +316,7 @@ def test_repository_toggle_only_rewrites_managed_content(
 
     runner = RepoRunner()
     manager = object.__new__(PackageManager)
-    manager.runner = runner
+    manager.runner = runner  # type: ignore
     rewritten: list[str] = []
 
     monkeypatch.setattr(provisioning, "_privileged_exists", lambda *args: True)
@@ -343,7 +346,7 @@ def test_repository_setup_refuses_to_overwrite_custom_configuration(
             return "custom repository configuration\n"
 
     manager = object.__new__(PackageManager)
-    manager.runner = RepoRunner()
+    manager.runner = RepoRunner()  # type: ignore
     monkeypatch.setattr(provisioning, "_privileged_exists", lambda *args: True)
 
     with pytest.raises(ConfigurationError, match="refusing to overwrite"):
@@ -357,7 +360,7 @@ def test_failed_apt_repository_setup_attempts_cleanup() -> None:
     manager = object.__new__(PackageManager)
     manager.family = "apt"
     manager.command = "apt-get"
-    manager.runner = object()
+    manager.runner = object()  # type: ignore
     manager.installed_version = lambda: None  # type: ignore[method-assign]
     events: list[str] = []
 
@@ -381,7 +384,7 @@ def test_failed_rpm_repository_setup_attempts_cleanup() -> None:
     manager = object.__new__(PackageManager)
     manager.family = "rpm"
     manager.command = "dnf"
-    manager.runner = object()
+    manager.runner = object()  # type: ignore
     manager.installed_version = lambda: None  # type: ignore[method-assign]
     events: list[object] = []
 
@@ -420,7 +423,7 @@ def test_failed_apt_wazuh_install_disables_repository() -> None:
     manager = object.__new__(PackageManager)
     manager.family = "apt"
     manager.command = "apt-get"
-    manager.runner = AptCleanupRunner()
+    manager.runner = AptCleanupRunner()  # type: ignore
 
     manager.installed_version = lambda: None  # type: ignore[method-assign]
     manager._setup_apt_repository = lambda: events.append("enable")  # type: ignore[method-assign]
@@ -464,7 +467,7 @@ def test_failed_rpm_wazuh_install_disables_repository() -> None:
     manager = object.__new__(PackageManager)
     manager.family = "rpm"
     manager.command = "dnf"
-    manager.runner = FailingRunner()
+    manager.runner = FailingRunner()  # type: ignore
     manager.installed_version = lambda: None  # type: ignore[method-assign]
     manager._setup_rpm_repository = lambda: events.append("enable")  # type: ignore[method-assign]
     manager._set_rpm_repository_enabled = (  # type: ignore[method-assign]
@@ -487,7 +490,7 @@ def test_repository_cleanup_failure_does_not_hide_install_error(
     manager = object.__new__(PackageManager)
     manager.family = "apt"
     manager.command = "apt-get"
-    manager.runner = object()
+    manager.runner = object()  # type: ignore
     manager.installed_version = lambda: None  # type: ignore[method-assign]
     manager._setup_apt_repository = lambda: None  # type: ignore[method-assign]
 
@@ -573,7 +576,7 @@ def test_installed_rpm_wazuh_package_uses_trusted_query_path() -> None:
             return "4.14.8-1"
 
     manager = object.__new__(PackageManager)
-    manager.runner = RpmVersionRunner()
+    manager.runner = RpmVersionRunner()  # type: ignore
     manager.family = "rpm"
     manager.command = "dnf"
 
@@ -621,7 +624,7 @@ def test_missing_trusted_rpm_query_is_reported() -> None:
             )
 
     manager = object.__new__(PackageManager)
-    manager.runner = MissingRpmRunner()
+    manager.runner = MissingRpmRunner()  # type: ignore
     manager.family = "rpm"
     manager.command = "dnf"
 
@@ -660,7 +663,7 @@ def test_rpm_dependencies_accept_coreutils_single_commands() -> None:
 
     runner = RpmRunner()
     manager = object.__new__(PackageManager)
-    manager.runner = runner
+    manager.runner = runner  # type: ignore
     manager.family = "rpm"
     manager.command = "dnf"
 
@@ -695,7 +698,7 @@ def test_rpm_dependencies_install_coreutils_when_commands_are_missing() -> None:
 
     runner = RpmRunner()
     manager = object.__new__(PackageManager)
-    manager.runner = runner
+    manager.runner = runner  # type: ignore
     manager.family = "rpm"
     manager.command = "dnf"
 
@@ -731,7 +734,7 @@ def test_missing_fstab_is_created_with_first_bind_entry(
     )
 
     provisioning._ensure_fstab(
-        MissingFstabRunner(),
+        MissingFstabRunner(),  # type: ignore
         Path("/workspace/rules"),
         Path("/var/ossec/etc/rules"),
     )
@@ -771,7 +774,7 @@ def test_rollback_removes_fstab_created_by_failed_init(
         preexisting_mounts=frozenset(),
     )
 
-    provisioning._rollback_provisioning(runner, workspace, snapshot)
+    provisioning._rollback_provisioning(runner, workspace, snapshot)  # type: ignore
 
     assert ["rm", "-f", "/etc/fstab"] in runner.commands
     assert restored == [
@@ -798,7 +801,7 @@ def test_group_membership_already_present_skips_usermod() -> None:
     runner = GroupRunner()
     user = InvokingUser("tester", 1000, 1000, Path("/home/tester"))
 
-    assert provisioning.ensure_group_membership(runner, user) is False
+    assert provisioning.ensure_group_membership(runner, user) is False  # type: ignore
 
     assert runner.commands == []
 
@@ -822,7 +825,7 @@ def test_group_membership_is_added_and_verified() -> None:
     runner = GroupRunner()
     user = InvokingUser("tester", 1000, 1000, Path("/home/tester"))
 
-    assert provisioning.ensure_group_membership(runner, user) is True
+    assert provisioning.ensure_group_membership(runner, user) is True  # type: ignore
 
     assert runner.commands == [["usermod", "-a", "-G", "wazuh", "tester"]]
     assert runner.capture_calls == 2
@@ -841,7 +844,7 @@ def test_group_membership_failure_is_fatal() -> None:
     user = InvokingUser("tester", 1000, 1000, Path("/home/tester"))
 
     with pytest.raises(ConfigurationError, match="failed to add tester to the wazuh group"):
-        provisioning.ensure_group_membership(GroupRunner(), user)
+        provisioning.ensure_group_membership(GroupRunner(), user)  # type: ignore
 
 
 def test_default_acls_are_applied_when_setfacl_is_available(
@@ -865,7 +868,7 @@ def test_default_acls_are_applied_when_setfacl_is_available(
     runner = AclRunner()
     workspace = tmp_path / "workspace"
 
-    provisioning.configure_default_acls(runner, workspace)
+    provisioning.configure_default_acls(runner, workspace)  # type: ignore
 
     acl = "u:wazuh:rwx,g:wazuh:rwx,o::---"
     assert runner.commands == [
@@ -884,7 +887,7 @@ def test_default_acls_are_optional_when_setfacl_is_missing(
 
     monkeypatch.setattr(provisioning.shutil, "which", lambda command: None)
 
-    provisioning.configure_default_acls(AclRunner(), tmp_path / "workspace")
+    provisioning.configure_default_acls(AclRunner(), tmp_path / "workspace")  # type: ignore
 
 
 def test_default_acl_failure_does_not_fail_provisioning_helper(
@@ -903,7 +906,7 @@ def test_default_acl_failure_does_not_fail_provisioning_helper(
 
     monkeypatch.setattr(provisioning.shutil, "which", lambda command: "/usr/bin/setfacl")
 
-    provisioning.configure_default_acls(AclRunner(), tmp_path / "workspace")
+    provisioning.configure_default_acls(AclRunner(), tmp_path / "workspace")  # type: ignore
 
 
 def test_workspace_permissions_keep_invoking_user_as_owner(tmp_path: Path) -> None:
@@ -913,7 +916,7 @@ def test_workspace_permissions_keep_invoking_user_as_owner(tmp_path: Path) -> No
     (workspace / "decoders").mkdir()
     user = InvokingUser("tester", 1000, 1000, tmp_path)
 
-    provisioning.configure_permissions(runner, workspace, user)
+    provisioning.configure_permissions(runner, workspace, user)  # type: ignore
 
     for name in ("rules", "decoders"):
         path = str(workspace / name)
@@ -953,7 +956,7 @@ def test_initialize_rejects_second_init_before_provisioning(
         '"wazuh_home": "/var/ossec", "wazuh_version": "4.14.8"}\n',
         encoding="utf-8",
     )
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
     events: list[str] = []
 
     monkeypatch.setattr(provisioning, "ensure_linux", lambda: events.append("linux"))
@@ -984,7 +987,7 @@ def test_initialize_checks_service_manager_before_install(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
 
     class FakePackageManager:
         def __init__(self, runner: object) -> None:
@@ -1001,7 +1004,7 @@ def test_initialize_checks_service_manager_before_install(
     monkeypatch.setattr(provisioning, "ensure_linux", lambda: events.append("linux"))
     monkeypatch.setattr(provisioning, "CommandRunner", lambda user: object())
     monkeypatch.setattr(provisioning, "PackageManager", FakePackageManager)
-    monkeypatch.setattr(provisioning, "_service_manager", lambda: events.append("service") or "systemd")
+    monkeypatch.setattr(provisioning, "_service_manager", lambda: events.append("service") or "systemd")  # type: ignore
     monkeypatch.setattr(provisioning, "prepare_workspace", lambda *args: events.append("workspace"))
     monkeypatch.setattr(provisioning, "ensure_workspace_venv", lambda *args: events.append("venv"))
     monkeypatch.setattr(provisioning, "preflight_bind_mounts", lambda *args: events.append("preflight"))
@@ -1011,7 +1014,7 @@ def test_initialize_checks_service_manager_before_install(
     monkeypatch.setattr(provisioning, "_render_ossec_config", lambda value: value)
     monkeypatch.setattr(provisioning, "_render_windows_rule_testing", lambda value: value)
     monkeypatch.setattr(provisioning, "ensure_group_membership", lambda *args: events.append("group"))
-    monkeypatch.setattr(provisioning, "stop_wazuh", lambda *args: events.append("stop") or False)
+    monkeypatch.setattr(provisioning, "stop_wazuh", lambda *args: events.append("stop") or False)  # type: ignore
     monkeypatch.setattr(provisioning, "configure_ossec", lambda *args: events.append("ossec"))
     monkeypatch.setattr(provisioning, "configure_windows_rule_testing", lambda *args: events.append("windows"))
     monkeypatch.setattr(provisioning, "configure_bind_mounts", lambda *args: events.append("mounts"))
@@ -1035,7 +1038,7 @@ def test_group_membership_failure_does_not_enter_host_rollback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
 
     class FakePackageManager:
         def __init__(self, runner: object) -> None:
@@ -1084,7 +1087,7 @@ def test_failed_host_configuration_uses_small_rollback_boundary(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
 
     class FakePackageManager:
         def __init__(self, runner: object) -> None:
@@ -1151,7 +1154,7 @@ def test_rollback_restores_only_system_state(
     )
 
     provisioning._rollback_provisioning(
-        runner,
+        runner,  # type: ignore
         workspace,
         _snapshot(active=False),
     )
@@ -1179,7 +1182,7 @@ def test_rollback_restores_active_but_disabled_systemd_service(
     monkeypatch.setattr(provisioning, "wait_for_logtest", lambda *args: None)
 
     provisioning._rollback_provisioning(
-        runner,
+        runner,  # type: ignore
         workspace,
         _snapshot(active=True, enabled=False),
     )
@@ -1194,7 +1197,7 @@ def test_start_wazuh_uses_start_after_deliberate_stop(
     runner = RecordingRunner()
     monkeypatch.setattr(provisioning, "_service_manager", lambda: "systemd")
 
-    provisioning.start_wazuh(runner)
+    provisioning.start_wazuh(runner)  # type: ignore
 
     assert ["systemctl", "start", "wazuh-manager"] in runner.commands
     assert ["systemctl", "restart", "wazuh-manager"] not in runner.commands
@@ -1206,7 +1209,7 @@ def test_start_wazuh_uses_sysv_start(
     runner = RecordingRunner()
     monkeypatch.setattr(provisioning, "_service_manager", lambda: "sysv")
 
-    provisioning.start_wazuh(runner)
+    provisioning.start_wazuh(runner)  # type: ignore
 
     assert ["service", "wazuh-manager", "start"] in runner.commands
     assert ["service", "wazuh-manager", "restart"] not in runner.commands
@@ -1227,7 +1230,7 @@ def test_logtest_timeout_reports_service_manager_troubleshooting(
     monkeypatch.setattr(provisioning, "_service_manager", lambda: manager)
 
     with pytest.raises(ConfigurationError) as exc_info:
-        provisioning.wait_for_logtest(RecordingRunner(), timeout=0)
+        provisioning.wait_for_logtest(RecordingRunner(), timeout=0)  # type: ignore
 
     message = str(exc_info.value)
     assert expected in message
@@ -1241,7 +1244,7 @@ def test_initialize_rolls_back_when_state_persistence_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
 
     class FakePackageManager:
         def __init__(self, runner: object) -> None:
@@ -1299,7 +1302,7 @@ def test_initialize_rejects_malformed_state_before_host_changes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
-    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)
+    user = InvokingUser("tester", os.getuid(), os.getgid(), tmp_path)  # type: ignore
 
     class FakePackageManager:
         def __init__(self, runner: object) -> None:
