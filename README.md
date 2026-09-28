@@ -10,16 +10,15 @@ The tooling is deliberately separated by responsibility:
 
 | Project | Responsibility |
 | --- | --- |
-| `wazuhtester` | reusable Wazuh logtest library, CLI, and pytest plugin |
-| `wazuh-rule-tests` | versioned pytest regression corpus for built-in Wazuh rules |
-| `wazuhcoverage` | runtime Wazuh JSON archive coverage analysis |
-| `wazuh-testgen` | generation of pytest rule-test content |
+| [`wazuhtester`](https://github.com/zbalkan/wazuhtester) | reusable Wazuh logtest library, CLI, and pytest plugin |
+| [`wazuh-rule-tests`](https://github.com/zbalkan/https://github.com/zbalkan/wazuh-rule-tests) | versioned pytest regression corpus for built-in Wazuh rules |
+| [`wazuhcoverage`](https://github.com/zbalkan/wazuhcoverage) | runtime Wazuh JSON archive coverage analysis |
+| [`wazuhtestgen`](https://github.com/zbalkan/wazuhtestgen) | generation of pytest rule-test content |
 | `wazuhdevenv` | environment installation, configuration, managed content, and orchestration |
 
 ## Installation
 
-For CLI use, install `wazuhdevenv` with an isolated application installer.
-Before the first PyPI release, install the current `main` branch directly:
+For CLI use, install `wazuhdevenv` with an isolated application installer. Before the first PyPI release, install the current `main` branch directly:
 
 ```bash
 pipx install "git+https://github.com/zbalkan/wazuhdevenv.git@main"
@@ -102,10 +101,8 @@ For development before a corpus release is available:
 wazuhdevenv init --skip-corpus
 ```
 
-Wazuh installs sample `local_rules.xml` and `local_decoder.xml` files. In a
-workspace provisioned by `wazuhdevenv`, these samples are not treated as user
-content and are never copied into the project. Users can add their own rule or
-decoder files later, including files with those names if they choose.
+Wazuh installs sample `local_rules.xml` and `local_decoder.xml` files. In a workspace provisioned by `wazuhdevenv`, these samples are not treated as user
+content and are never copied into the project. Users can add their own rule or decoder files later, including files with those names if they choose.
 
 ## Workspace
 
@@ -231,84 +228,34 @@ Remove the host integration created by `wazuhdevenv` with:
 wazuhdevenv uninstall
 ```
 
-The command is ownership-aware. It removes only state that can be attributed to
-`wazuhdevenv`, restores pre-existing Wazuh state where provenance is available,
-and refuses to overwrite Wazuh configuration that changed after initialization.
+The command is ownership-aware. It removes only state that can be attributed to `wazuhdevenv`, restores pre-existing Wazuh state where provenance is available, and refuses to overwrite Wazuh configuration that changed after initialization.
 
-For a normal environment created by current versions, teardown first validates
-the managed mount state, the exact `/etc/fstab` entries, and package-directory
-safety before changing host state. When Wazuh Manager was installed by
-`wazuhdevenv`, an active bind mount that predates initialization causes a safe
-refusal before Wazuh is stopped or workspace access is changed. After preflight,
-the command stops Wazuh Manager, unmounts the managed `rules` and `decoders`
-directories and verifies that they are no longer mount points, removes the
-matching `/etc/fstab` entries, verifies that neither package directory nor any
-content below it is mounted, empties the underlying
-`/var/ossec/etc/rules` and `/var/ossec/etc/decoders` package directories
-while preserving the directories themselves, restores their expected
-`root:wazuh` ownership and `0770` mode (creating them only if missing),
-uninstalls the `wazuh-manager` package, and finally removes managed
-`wazuhdevenv` state.
+For a normal environment created by current versions, teardown first validates the managed mount state, the exact `/etc/fstab` entries, and package-directory safety before changing host state. When Wazuh Manager was installed by `wazuhdevenv`, an active bind mount that predates initialization causes a safe refusal before Wazuh is stopped or workspace access is changed. After preflight, the command stops Wazuh Manager, unmounts the managed `rules` and `decoders` directories and verifies that they are no longer mount points, removes the matching `/etc/fstab` entries, verifies that neither package directory nor any content below it is mounted, empties the underlying `/var/ossec/etc/rules` and `/var/ossec/etc/decoders` package directories while preserving the directories themselves, restores their expected `root:wazuh` ownership and `0770` mode (creating them only if missing), uninstalls the `wazuh-manager` package, and finally removes managed `wazuhdevenv` state.
 
 Uninstall also:
 
 - unmounts the managed `rules` and `decoders` bind mounts;
 - removes only the exact matching entries added to `/etc/fstab`;
 - removes the developer's `wazuh` group membership only when `init` added it;
-- removes Wazuh-specific default ACL entries and returns files still using the
-  `wazuh` group to the invoking user's primary group;
+- removes Wazuh-specific default ACL entries and returns files still using the `wazuh` group to the invoking user's primary group;
 - removes the workspace `.venv` only when `wazuhdevenv` created it;
 - removes the managed `~/.wazuhdevenv` state, caches, corpora, and logs;
-- removes Wazuh Manager and the tool-owned `/var/ossec` tree only when
-  `wazuhdevenv` installed Wazuh;
-- restores or removes the Wazuh package repository according to its recorded
-  pre-initialization state;
-- removes an APT Wazuh keyring when the tool created it and doing so would not
-  break a repository configuration modified after initialization;
-- when Wazuh already existed before `init`, preserves the package and restores
-  the exact pre-initialization `ossec.conf`, Windows rule file, and service
-  state recorded during provisioning.
+- removes Wazuh Manager and the tool-owned `/var/ossec` tree only when `wazuhdevenv` installed Wazuh;
+- restores or removes the Wazuh package repository according to its recorded pre-initialization state;
+- removes an APT Wazuh keyring when the tool created it and doing so would not break a repository configuration modified after initialization;
+- when Wazuh already existed before `init`, preserves the package and restores the exact pre-initialization `ossec.conf`, Windows rule file, and service state recorded during provisioning.
 
-User content under `rules/`, `decoders/`, and `tests/` is always preserved.
-If a pre-existing workspace virtual environment was present, it is preserved as
-well.
+User content under `rules/`, `decoders/`, and `tests/` is always preserved. If a pre-existing workspace virtual environment was present, it is preserved as well.
 
-On successful completion, uninstall prints a final inventory with four sections:
-`Removed`, `Restored`, `Preserved`, and `Remnants`. Preflight refusals
-return an error before teardown begins and therefore do not print a completion
-inventory. The remnant list is deliberate; the command does not claim to return
-the host to an unknowable pristine state.
+On successful completion, uninstall prints a final inventory with four sections: `Removed`, `Restored`, `Preserved`, and `Remnants`. Preflight refusals return an error before teardown begins and therefore do not print a completion inventory. The remnant list is deliberate; the command does not claim to return the host to an unknowable pristine state.
 
-Known intentional remnants include the `wazuhdevenv` Python or pipx
-installation itself, which must be removed using the installer that installed
-the CLI. A small sibling lock file is also retained outside the managed state
-directory so concurrent commands remain serialized while that directory is
-deleted. System prerequisite packages installed during provisioning are also
-retained because they may have acquired other consumers; current state records
-the exact package names so uninstall can report them. Package-manager cache and
-metadata changes made by APT, DNF, or YUM are not rolled back.
+Known intentional remnants include the `wazuhdevenv` Python or pipx installation itself, which must be removed using the installer that installed the CLI. A small sibling lock file is also retained outside the managed state directory so concurrent commands remain serialized while that directory is deleted. System prerequisite packages installed during provisioning are also retained because they may have acquired other consumers; current state records the exact package names so uninstall can report them. Package-manager cache and metadata changes made by APT, DNF, or YUM are not rolled back.
 
-Workspace permission modes are not reconstructed. Initialization standardizes
-rule and decoder directories/files to development permissions, currently
-`0770` and `0660`. Uninstall removes Wazuh-specific group/ACL access but does
-not have enough information to restore arbitrary per-file modes or a
-pre-initialization non-primary group. Pre-existing/default ACL base and mask
-entries are preserved. If group membership was removed, already-running login
-sessions may continue to carry the old supplementary group until a new login
-session starts.
+Workspace permission modes are not reconstructed. Initialization standardizes rule and decoder directories/files to development permissions, currently `0770` and `0660`. Uninstall removes Wazuh-specific group/ACL access but does not have enough information to restore arbitrary per-file modes or a pre-initialization non-primary group. Pre-existing/default ACL base and mask entries are preserved. If group membership was removed, already-running login sessions may continue to carry the old supplementary group until a new login session starts.
 
-On RPM-family systems, an RPM signing-key database entry imported during Wazuh
-repository setup is not removed automatically because its prior ownership cannot
-be attributed safely. Wazuh system users or groups may also remain if the
-distribution package's uninstall scripts deliberately retain them; the final
-report detects and lists those accounts when present.
+On RPM-family systems, an RPM signing-key database entry imported during Wazuh repository setup is not removed automatically because its prior ownership cannot be attributed safely. Wazuh system users or groups may also remain if the distribution package's uninstall scripts deliberately retain them; the final report detects and lists those accounts when present.
 
-State created before uninstall provenance tracking is handled conservatively.
-The command can clean exact managed mounts, fstab entries, and reversible Wazuh
-configuration changes, but it preserves components whose ownership cannot be
-proved, including the Wazuh package, user group membership, workspace `.venv`,
-and legacy initialization backup files. Those preserved remnants are printed
-explicitly.
+State created before uninstall provenance tracking is handled conservatively. The command can clean exact managed mounts, fstab entries, and reversible Wazuh configuration changes, but it preserves components whose ownership cannot be proved, including the Wazuh package, user group membership, workspace `.venv`, and legacy initialization backup files. Those preserved remnants are printed explicitly.
 
 ## Development
 
