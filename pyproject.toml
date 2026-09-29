@@ -33,6 +33,7 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
+  "mypy>=1.11,<2",
   "pytest>=8,<10",
 ]
 
@@ -51,3 +52,14 @@ include = ["wazuhdevenv*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["--import-mode=importlib"]
+
+[tool.mypy]
+# wazuhdevenv is a POSIX/Linux-only application. Pinning the target keeps
+# platform-specific APIs available when contributors run mypy from Windows.
+platform = "linux"
+
+[[tool.mypy.overrides]]
+module = "pytest"
+# Permit checking the application and tests when only the runtime dependency
+# set is installed. The dev extra still installs pytest for normal development.
+ignore_missing_imports = true

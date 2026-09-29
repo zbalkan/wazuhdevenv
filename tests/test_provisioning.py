@@ -1017,12 +1017,18 @@ def test_initialize_checks_service_manager_before_install(
             events.append("install")
             return "4.14.8"
 
+    def service_manager() -> str:
+        events.append("service")
+        return "systemd"
+
+    def stop_wazuh(*args: object) -> bool:
+        events.append("stop")
+        return False
+
     monkeypatch.setattr(provisioning, "ensure_linux", lambda: events.append("linux"))
     monkeypatch.setattr(provisioning, "CommandRunner", lambda user: object())
     monkeypatch.setattr(provisioning, "PackageManager", FakePackageManager)
-    monkeypatch.setattr(
-        provisioning, "_service_manager", lambda: events.append("service") or "systemd"
-    )  # type: ignore
+    monkeypatch.setattr(provisioning, "_service_manager", service_manager)
     monkeypatch.setattr(
         provisioning, "prepare_workspace", lambda *args: events.append("workspace")
     )
@@ -1042,9 +1048,7 @@ def test_initialize_checks_service_manager_before_install(
     monkeypatch.setattr(
         provisioning, "ensure_group_membership", lambda *args: events.append("group")
     )
-    monkeypatch.setattr(
-        provisioning, "stop_wazuh", lambda *args: events.append("stop") or False
-    )  # type: ignore
+    monkeypatch.setattr(provisioning, "stop_wazuh", stop_wazuh)
     monkeypatch.setattr(
         provisioning, "configure_ossec", lambda *args: events.append("ossec")
     )

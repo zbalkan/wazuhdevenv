@@ -30,6 +30,9 @@ jobs:
       - name: Unit tests
         run: python -m pytest -v
 
+      - name: Static type checks
+        run: python -m mypy .
+
       - name: CLI smoke tests
         run: |
           wazuhdevenv --help
